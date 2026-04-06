@@ -7,15 +7,24 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/router"
+	"github.com/DilanHera/mockTP/internal/tui"
 )
 
 func main() {
 	app := app.NewApp()
-	router := router.SetupRouter(app)
-	fmt.Println("Server is running on port 3000")
-	err := http.ListenAndServe(":3000", router)
-	if err != nil {
-		fmt.Println("Error starting server:", err)
+	r := router.SetupRouter(app)
+
+	fmt.Fprintln(os.Stderr, "HTTP server listening on :3000")
+
+	go func() {
+		if err := http.ListenAndServe(":3000", r); err != nil {
+			fmt.Fprintln(os.Stderr, "HTTP server error:", err)
+			os.Exit(1)
+		}
+	}()
+
+	if err := tui.Run(app); err != nil {
+		fmt.Fprintln(os.Stderr, "TUI error:", err)
 		os.Exit(1)
 	}
 }

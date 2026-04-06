@@ -40,8 +40,9 @@ func (h *PgzinvHandler) ServiceProvisioningHandler(w http.ResponseWriter, r *htt
 	}
 
 	payload := &serviceprovisioningmodel.ServiceProvisioningPayload{
-		ResourceName: request.ResourceItemList[0].ResourceName,
-		Payload:      resourceItem,
+		ResourceName:  request.ResourceItemList[0].ResourceName,
+		RequestHeader: request.RequestHeader,
+		Payload:       resourceItem,
 	}
 	response, err := h.pgzinv.ServiceProvisioning(payload)
 	if err != nil {

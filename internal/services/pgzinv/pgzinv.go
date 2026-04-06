@@ -9,7 +9,7 @@ import (
 )
 
 type Pgzinv interface {
-	ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPayload) (interface{}, error)
+	ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPayload) (any, error)
 }
 
 type pgzinv struct {
@@ -22,8 +22,8 @@ func NewPgzinv(app *app.App) Pgzinv {
 	}
 }
 
-func (p *pgzinv) ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPayload) (interface{}, error) {
-	spResource := serviceprovisioning.NewServiceProvisioning()
+func (p *pgzinv) ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPayload) (any, error) {
+	spResource := serviceprovisioning.NewServiceProvisioning(p.app)
 	switch input.ResourceName {
 	case "lockNumberByCriteriaPrepaid", "lockNumberByCriteriaPostpaid":
 		request := &serviceprovisioning.LockNumberByCriteriaRequestResourceItem{}
@@ -31,7 +31,7 @@ func (p *pgzinv) ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPaylo
 		if err != nil {
 			return nil, err
 		}
-		response, err := spResource.LockNumberByCriteria(request)
+		response, err := spResource.LockNumberByCriteria(request, input.RequestHeader)
 		if err != nil {
 			return nil, err
 		}
@@ -39,6 +39,61 @@ func (p *pgzinv) ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPaylo
 		// if err != nil {
 		// 	return nil, err
 		// }
+		return response, nil
+	case "lockNumberByMobilePrepaid", "lockNumberByMobilePostpaid":
+		request := &serviceprovisioning.LockNumberByMobileRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.LockNumberByMobile(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	case "clearNumberPreparationPrepaid", "clearNumberPreparationPostpaid":
+		request := &serviceprovisioning.ClearNumberPreparationRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.ClearNumberPreparation(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	case "querySimInfo":
+		request := &serviceprovisioning.QuerySimInfoRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.QuerySimInfo(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	case "requestPrepNoPrepaid", "requestPrepNoPostpaid":
+		request := &serviceprovisioning.RequestPrepNoRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.RequestPrepNo(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
+	case "confirmPreparationPrepaid", "confirmPreparationPostpaid":
+		request := &serviceprovisioning.ConfirmPreparationRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.ConfirmPreparation(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
 		return response, nil
 	default:
 		return nil, errors.New("invalid resource name")

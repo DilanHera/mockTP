@@ -28,37 +28,46 @@ type LockNumberByCriteriaRequestResourceItem struct {
 
 type LockNumberByCriteriaResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader         `json:"responseHeader" validate:"required"`
-	ResourceItemList []LockNumberByCriteriaResponseItem `json:"resourceItemList" validate:"required"`
+	ResourceItemList []LockNumberByCriteriaResponseItem `json:"resourceItemList" validate:"required,dive"`
 }
 
 type LockNumberByCriteriaResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse" validate:"required"`
+	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse" validate:"required,min=1,dive"`
 }
 
 type RequestPrepResponseItem struct {
 	MobileNo string `json:"mobileNo" validate:"required"`
 }
 
-func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRequestResourceItem) (LockNumberByCriteriaResponse, error) {
+func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (LockNumberByCriteriaResponse, error) {
+	if input.ResourceName == "lockNumberByCriteriaPrepaid" && UserLockNumberByCriteriaPrepaid != nil {
+		return *UserLockNumberByCriteriaPrepaid, nil
+	}
+	if input.ResourceName == "lockNumberByCriteriaPostpaid" && UserLockNumberByCriteriaPostpaid != nil {
+		return *UserLockNumberByCriteriaPostpaid, nil
+	}
 	response := LockNumberByCriteriaResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
-			ResourceGroupId: "123",
-			ResourceOrderId: "123",
-			ResultCode:      "123",
-			ResultDesc:      "123",
+			ResourceGroupId:  requestHeader.ResourceGroupId,
+			ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+			ReTransmit:       "0",
+			UserSys:          requestHeader.UserSys,
+			DeveloperMessage: "",
+			ResultCode:       "20000",
+			ResultDesc:       "Success",
 		},
 		ResourceItemList: []LockNumberByCriteriaResponseItem{
 			{
 				ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
 					ResourceName:           input.ResourceName,
-					ResourceItemStatus:     "success",
-					ErrorFlag:              "0",
-					ResourceItemErrMessage: "",
+					ResourceItemStatus:     "Success",
+					ErrorFlag:              "1",
+					ResourceItemErrMessage: "Success",
 					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
 						SuppCode:             []string{},
 						TaskKeyCondition:     []string{},
-						TaskDeveloperMessage: []string{""},
+						TaskDeveloperMessage: []string{},
 					},
 				},
 				RequestPrepResponse: []RequestPrepResponseItem{},
@@ -69,7 +78,7 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 	if err != nil {
 		return response, err
 	}
-	for i := 0; i < quantity; i++ {
+	for range quantity {
 		response.ResourceItemList[0].RequestPrepResponse = append(response.ResourceItemList[0].RequestPrepResponse, RequestPrepResponseItem{
 			MobileNo: fmt.Sprintf("061%07d", rand.Intn(10000000)),
 		})

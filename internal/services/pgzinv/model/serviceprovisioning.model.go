@@ -59,8 +59,9 @@ type ServiceProvisioningRequest struct {
 
 /* Transform Model */
 type ServiceProvisioningPayload struct {
-	ResourceName string
-	Payload      []byte
+	ResourceName  string
+	RequestHeader HeaderServiceProvisioning
+	Payload       []byte
 }
 
 /* Response Model */
