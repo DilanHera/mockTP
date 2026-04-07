@@ -108,7 +108,7 @@ func newServiceProvisioningMockTextarea(resourceName, value string) textarea.Mod
 }
 
 func isJSONSubmit(msg tea.KeyMsg) bool {
-	return msg.String() == "ctrl+s"
+	return msg.String() == "ctrl+s" || msg.String() == "cmd+s"
 }
 
 func clearSaveNoticeAfter(d time.Duration) tea.Cmd {
