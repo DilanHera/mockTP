@@ -21,8 +21,8 @@ type LockNumberByCriteriaRequestResourceItem struct {
 	NumberStatusFrom string `json:"numberStatusFrom" validate:"required"`
 	NumberStatusTo   string `json:"numberStatusTo" validate:"omitempty"`
 	LocationCode     string `json:"locationCode" validate:"omitempty"`
-	LuckyName        string `json:"luckyName" validate:"required"`
-	LuckyType        string `json:"luckyType" validate:"required"`
+	LuckyName        string `json:"luckyName" validate:"omitempty"`
+	LuckyType        string `json:"luckyType" validate:"omitempty"`
 	Quantity         string `json:"quantity" validate:"required"`
 }
 
