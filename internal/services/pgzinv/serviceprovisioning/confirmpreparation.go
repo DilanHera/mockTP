@@ -38,7 +38,7 @@ type ConfirmPreparationResponse struct {
 
 type ConfirmPreparationResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	ConfirmPrepResponse ConfirmPrepResponseItem `json:"confirmPrepResponse" validate:"required"`
+	ConfirmPrepResponse []ConfirmPrepResponseItem `json:"confirmPrepResponse" validate:"required"`
 }
 
 type ConfirmPrepResponseItem struct {
@@ -88,21 +88,23 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 						TaskDeveloperMessage: []string{},
 					},
 				},
-				ConfirmPrepResponse: ConfirmPrepResponseItem{
-					SimSerialNo:    input.SimSerialNo,
-					MobileNo:       input.MobileNo,
-					PrepNo:         input.PrepNo,
-					ExpiryDate:     "31/06/2026",
-					RegionCode:     input.RegionCode,
-					ClassifyCode:   "N",
-					PatternNo:      "51",
-					NumberStatusTo: "B",
-					SimType:        input.SimType,
-					Package:        input.Package,
-					PackageRowId:   input.PackageRowId,
-					LuckyName:      "Mor_AIS",
-					LuckyType:      "Good Money & Love",
-					QRCodeInfo:     "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
+				ConfirmPrepResponse: []ConfirmPrepResponseItem{
+					{
+						SimSerialNo:    input.SimSerialNo,
+						MobileNo:       input.MobileNo,
+						PrepNo:         input.PrepNo,
+						ExpiryDate:     "31/06/2026",
+						RegionCode:     input.RegionCode,
+						ClassifyCode:   "N",
+						PatternNo:      "51",
+						NumberStatusTo: "B",
+						SimType:        input.SimType,
+						Package:        input.Package,
+						PackageRowId:   input.PackageRowId,
+						LuckyName:      "Mor_AIS",
+						LuckyType:      "Good Money & Love",
+						QRCodeInfo:     "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
+					},
 				},
 			},
 		},

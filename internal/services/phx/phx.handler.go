@@ -35,3 +35,19 @@ func (h *phxHandler) RequestESIMHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *phxHandler) NewRegistrationHandler(w http.ResponseWriter, r *http.Request) {
+	request := &NewRegistrationRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := h.phx.NewRegistration(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(response)
+}

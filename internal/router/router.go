@@ -15,6 +15,6 @@ func SetupRouter(app *app.App) chi.Router {
 
 	router.Post("/api/v2/PGZInventory/synchronous/ServiceProvisioning", pgzinvHandler.ServiceProvisioningHandler)
 	router.Post("/api/v1/product/requestESIM", phxHandler.RequestESIMHandler)
-
+	router.Post("/api/v1/broker/createOrder/newRegistration/msisdn/{msisdn}.json", phxHandler.NewRegistrationHandler)
 	return router
 }

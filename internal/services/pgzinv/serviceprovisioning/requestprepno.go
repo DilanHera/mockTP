@@ -77,6 +77,6 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 	if err != nil {
 		return response, err
 	}
-	response.ResourceItemList[0].PrepNoTo = strconv.Itoa(prepNoFrom + quantity)
+	response.ResourceItemList[0].PrepNoTo = strconv.Itoa(prepNoFrom + (quantity - 1))
 	return response, nil
 }
