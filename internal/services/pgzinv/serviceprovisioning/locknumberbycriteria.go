@@ -33,6 +33,7 @@ type LockNumberByCriteriaResponse struct {
 
 type LockNumberByCriteriaResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
+	Key                 string                  `json:"key" validate:"omitempty"`
 	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse" validate:"required,min=1,dive"`
 }
 
@@ -70,6 +71,7 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 						TaskDeveloperMessage: []string{},
 					},
 				},
+				Key:                 "1234567",
 				RequestPrepResponse: []RequestPrepResponseItem{},
 			},
 		},
