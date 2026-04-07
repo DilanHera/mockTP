@@ -7,6 +7,7 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
+	"github.com/DilanHera/mockTP/internal/services/phx"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -19,6 +20,7 @@ const (
 	screenServiceProvisioning
 	screenPHX
 	screenServiceProvisioningMockJSON
+	screenPHXMockJSON
 )
 
 // clearSaveNoticeMsg dismisses the post-save confirmation after a short delay.
@@ -35,7 +37,8 @@ type model struct {
 	width  int
 	height int
 
-	// serviceProvisioning mock JSON editor: which resource mock is being edited.
+	// mock JSON editor: which resource/API mock is being edited; parent screen for Esc/back.
+	jsonMockParent   screen
 	jsonMockResource string
 	ta               textarea.Model
 	jsonErr          string
@@ -107,6 +110,25 @@ func newServiceProvisioningMockTextarea(resourceName, value string) textarea.Mod
 	return t
 }
 
+func newPHXMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = PHXMockPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func isJSONMockScreen(s screen) bool {
+	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON
+}
+
 func isJSONSubmit(msg tea.KeyMsg) bool {
 	return msg.String() == "ctrl+s" || msg.String() == "cmd+s"
 }
@@ -123,7 +145,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if m.screen == screenServiceProvisioningMockJSON {
+		if isJSONMockScreen(m.screen) {
 			layoutJSONEditor(&m)
 			var cmd tea.Cmd
 			m.ta, cmd = m.ta.Update(msg)
@@ -132,7 +154,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		if m.screen == screenServiceProvisioningMockJSON {
+		if isJSONMockScreen(m.screen) {
 			switch msg.String() {
 			case "ctrl+c":
 				return m, tea.Quit
@@ -145,7 +167,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.ta.Focus()
 			}
 			if isJSONSubmit(msg) {
-				return m.submitServiceProvisioningMockJSON()
+				return m.submitMockJSON()
 			}
 			var cmd tea.Cmd
 			m.ta, cmd = m.ta.Update(msg)
@@ -213,6 +235,7 @@ func (m model) enter() (model, tea.Cmd) {
 		}
 		name := ServiceProvisioningResources[m.cursor]
 		m.screen = screenServiceProvisioningMockJSON
+		m.jsonMockParent = screenServiceProvisioning
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
@@ -221,17 +244,40 @@ func (m model) enter() (model, tea.Cmd) {
 		cmd := m.ta.Focus()
 		return m, cmd
 	case screenPHX:
-		// No children.
+		if m.cursor < 0 || m.cursor >= len(PHXApis) {
+			return m, nil
+		}
+		name := PHXApis[m.cursor]
+		m.screen = screenPHXMockJSON
+		m.jsonMockParent = screenPHX
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.ta = newPHXMockTextarea(name, "")
+		layoutJSONEditor(&m)
+		cmd := m.ta.Focus()
+		return m, cmd
 	}
 	return m, nil
 }
 
 func (m model) leaveJSONEditor() model {
-	m.screen = screenServiceProvisioning
+	m.screen = m.jsonMockParent
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.ta.Blur()
 	return m
+}
+
+func (m model) submitMockJSON() (tea.Model, tea.Cmd) {
+	switch m.screen {
+	case screenServiceProvisioningMockJSON:
+		return m.submitServiceProvisioningMockJSON()
+	case screenPHXMockJSON:
+		return m.submitPHXMockJSON()
+	default:
+		return m, nil
+	}
 }
 
 func (m model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
@@ -281,9 +327,38 @@ func (m model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
+func (m model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	px := phx.NewPhx(m.app)
+	var err error
+	switch m.jsonMockResource {
+	case "requestESIM":
+		err = px.SetUserRequestESIM(raw)
+	case "newRegistration":
+		err = px.SetUserNewRegistration(raw)
+	default:
+		m.jsonErr = "internal: unknown PHX API"
+		return m, nil
+	}
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenPHXMockJSON
+		m.ta = newPHXMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(&m)
+		cmd := m.ta.Focus()
+		return m, cmd
+	}
+	m.screen = screenPHX
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
 func (m model) goBack() model {
 	switch m.screen {
-	case screenServiceProvisioningMockJSON:
+	case screenServiceProvisioningMockJSON, screenPHXMockJSON:
 		return m.leaveJSONEditor()
 	case screenServiceProvisioning:
 		m.screen = screenPGZINV
@@ -310,13 +385,15 @@ func (m model) breadcrumb() string {
 		return "PHX"
 	case screenServiceProvisioningMockJSON:
 		return "PGZINV > ServiceProvisioning > " + m.jsonMockResource + " [JSON]"
+	case screenPHXMockJSON:
+		return "PHX > " + m.jsonMockResource + " [JSON]"
 	default:
 		return "mockTP"
 	}
 }
 
 func (m model) View() string {
-	if m.screen == screenServiceProvisioningMockJSON {
+	if isJSONMockScreen(m.screen) {
 		var b strings.Builder
 		b.WriteString(styleTitle.Render(m.breadcrumb()))
 		b.WriteString("\n\n")
@@ -334,7 +411,7 @@ func (m model) View() string {
 
 	var b strings.Builder
 	b.WriteString(styleTitle.Render(m.breadcrumb()))
-	if m.screen == screenServiceProvisioning && m.saveNotice != "" {
+	if (m.screen == screenServiceProvisioning || m.screen == screenPHX) && m.saveNotice != "" {
 		b.WriteString("\n\n")
 		b.WriteString(styleOK.Render(m.saveNotice))
 	}

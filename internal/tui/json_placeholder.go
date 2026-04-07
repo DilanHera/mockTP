@@ -179,22 +179,24 @@ const confirmPreparationJSONPlaceholder = `{
         "taskKeyCondition": [],
         "taskDeveloperMessage": []
       },
-      "confirmPrepResponse": {
-        "simSerialNo": "89550000000000000000",
-        "mobileNo": "0983044861",
-        "prepNo": "9300015000",
-        "expiryDate": "31/06/2026",
-        "regionCode": "C301",
-        "classifyCode": "N",
-        "patternNo": "51",
-        "numberStatusTo": "B",
-        "simType": "USIM",
-        "package": "PKG01",
-        "packageRowId": "1234567890",
-        "luckyName": "Mor_AIS",
-        "luckyType": "Good Money & Love",
-        "qrCodeInfo": "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF"
-      }
+      "confirmPrepResponse": [
+        {
+          "simSerialNo": "89550000000000000000",
+          "mobileNo": "0983044861",
+          "prepNo": "9300015000",
+          "expiryDate": "31/06/2026",
+          "regionCode": "C301",
+          "classifyCode": "N",
+          "patternNo": "51",
+          "numberStatusTo": "B",
+          "simType": "USIM",
+          "package": "PKG01",
+          "packageRowId": "1234567890",
+          "luckyName": "Mor_AIS",
+          "luckyType": "Good Money & Love",
+          "qrCodeInfo": "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF"
+        }
+      ]
     }
   ]
 }`
@@ -225,6 +227,36 @@ func ServiceProvisioningMockPlaceholder(resourceName string) string {
 		return confirmPreparationJSONPlaceholder
 	case "confirmPreparationPostpaid":
 		return strings.Replace(confirmPreparationJSONPlaceholder, "confirmPreparationPrepaid", "confirmPreparationPostpaid", 1)
+	default:
+		return "{}"
+	}
+}
+
+const phxRequestESIMResponsePlaceholder = `{
+  "resultCode": "20000",
+  "resultDesc": "Success",
+  "resultData": {
+    "newSimItem": {
+      "imsi": "1234567890",
+      "qrCodeInfo": "LPA:1$example$80D88923FADA3C76656D344AF",
+      "regionCode": "C301",
+      "serialNo": "89550000000000000000"
+    }
+  }
+}`
+
+const phxNewRegistrationResponsePlaceholder = `{
+  "resultCode": "20000",
+  "resultDesc": "Success"
+}`
+
+// PHXMockPlaceholder returns example response JSON for the given PHX API name (see PHXApis).
+func PHXMockPlaceholder(apiName string) string {
+	switch apiName {
+	case "requestESIM":
+		return phxRequestESIMResponsePlaceholder
+	case "newRegistration":
+		return phxNewRegistrationResponsePlaceholder
 	default:
 		return "{}"
 	}
