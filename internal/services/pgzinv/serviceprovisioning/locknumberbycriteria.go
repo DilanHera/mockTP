@@ -19,7 +19,7 @@ type LockNumberByCriteriaRequestResourceItem struct {
 	NumberPattern    string `json:"numberPattern" validate:"required"`
 	ClassifyCode     string `json:"classifyCode" validate:"required"`
 	NumberStatusFrom string `json:"numberStatusFrom" validate:"required"`
-	NumberStatusTo   string `json:"numberStatusTo" validate:"required"`
+	NumberStatusTo   string `json:"numberStatusTo" validate:"omitempty"`
 	LocationCode     string `json:"locationCode" validate:"omitempty"`
 	LuckyName        string `json:"luckyName" validate:"required"`
 	LuckyType        string `json:"luckyType" validate:"required"`
