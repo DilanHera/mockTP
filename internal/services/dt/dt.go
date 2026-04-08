@@ -7,10 +7,11 @@ import (
 
 type DT interface {
 	ListOrderNoByDono(input *ListOrderNoByDonoRequest) (*ListOrderNoByDonoResponse, error)
-	
+	PickingDocument(input *PickingDocumentRequest) (*PickingDocumentResponse, error)
 
 	// Set mock response from user
 	SetUserListOrderNoByDono(jsonData json.RawMessage) error
+	SetUserPickingDocument(jsonData json.RawMessage) error
 }
 
 type dt struct {

@@ -19,5 +19,6 @@ func SetupRouter(app *app.App) chi.Router {
 	router.Post("/api/v1/product/requestESIM", phxHandler.RequestESIMHandler)
 	router.Post("/api/v1/broker/createOrder/newRegistration/msisdn/{msisdn}.json", phxHandler.NewRegistrationHandler)
 	router.Post("/dtreport-replicas/api/sale/v1/list-orderno-by-dono", dtHandler.ListOrderNoByDonoHandler)
+	router.Post("/dtcore-saleout/api/after-sale/v1/picking-document", dtHandler.PickingDocumentHandler)
 	return router
 }

@@ -6,9 +6,11 @@ import (
 )
 
 var (
+	// High-contrast title/help: subtle blues/greys were often invisible on Windows ConPTY
+	// when adaptive light/dark detection disagreed with the real palette.
 	styleTitle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.AdaptiveColor{Light: "25", Dark: "86"})
+			Foreground(lipgloss.AdaptiveColor{Light: "0", Dark: "15"})
 
 	styleMenu = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "238", Dark: "250"})
@@ -28,7 +30,7 @@ var (
 			Foreground(lipgloss.AdaptiveColor{Light: "28", Dark: "121"})
 
 	styleHelp = lipgloss.NewStyle().
-			Foreground(lipgloss.AdaptiveColor{Light: "241", Dark: "244"})
+			Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"})
 )
 
 func applyTextareaTheme(t *textarea.Model) {

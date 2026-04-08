@@ -9,6 +9,10 @@ var UserRequestESIM *RequestESIMResponse
 var UserNewRegistration *NewRegistrationResponse
 
 func (p *phx) SetUserRequestESIM(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserRequestESIM = nil
+		return nil
+	}
 	response := RequestESIMResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -19,6 +23,10 @@ func (p *phx) SetUserRequestESIM(jsonData json.RawMessage) error {
 }
 
 func (p *phx) SetUserNewRegistration(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserNewRegistration = nil
+		return nil
+	}
 	response := NewRegistrationResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {

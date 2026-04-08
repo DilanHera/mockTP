@@ -1,262 +1,45 @@
 package tui
 
-import "strings"
+import (
+	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
+	"github.com/DilanHera/mockTP/internal/services/phx"
+)
 
-// LockNumberByCriteriaJSONPlaceholder is example JSON for
-// serviceprovisioning.LockNumberByCriteriaResponse (UnmarshalAndValidate).
-const LockNumberByCriteriaJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "lockNumberByCriteriaPrepaid",
-      "resourceItemStatus": "success",
-      "errorFlag": "0",
-      "resourceItemErrMessage": "",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": [""]
-      },
-      "requestPrepResponse": [
-        { "mobileNo": "0611234567" }
-      ]
-    }
-  ]
-}`
-
-const lockNumberByMobileJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "lockNumberByMobilePrepaid",
-      "resourceItemStatus": "Success",
-      "errorFlag": "1",
-      "resourceItemErrMessage": "Success",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": []
-      }
-    }
-  ]
-}`
-
-const clearNumberPreparationJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "clearNumberPreparationPrepaid",
-      "resourceItemStatus": "Success",
-      "errorFlag": "1",
-      "resourceItemErrMessage": "Success",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": []
-      }
-    }
-  ]
-}`
-
-const querySimInfoJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "querySimInfo",
-      "resourceItemStatus": "Success",
-      "errorFlag": "1",
-      "resourceItemErrMessage": "Success",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": []
-      },
-      "simSerialNoList": [
-        {
-          "simSerialNo": "89550000000000000000",
-          "preparationDate": "28/02/202410:07:06",
-          "simSerialNoStatus": "Reserved",
-          "statusDate": "28/02/202410:07:06",
-          "expiryDate": "28/02/202623:59:59",
-          "packageNo": "9991425266",
-          "subRegion": "C301",
-          "packType": "X",
-          "subPackType": "K1",
-          "mobileNo": "0983044861",
-          "mobileNoStatus": "Reserved",
-          "numberClass": "Normal",
-          "numberPattern": "77",
-          "luckyName": "Mor_MAN",
-          "luckyType": "GoodLove",
-          "qrCodeInfo": "LPA:1$example$80D88923FADA3C76656D344AF",
-          "material": "1000022401"
-        }
-      ]
-    }
-  ]
-}`
-
-const requestPrepNoJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "requestPrepNoPrepaid",
-      "resourceItemStatus": "Success",
-      "errorFlag": "1",
-      "resourceItemErrMessage": "Success",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": []
-      },
-      "packageRowId": "1234567890",
-      "offeringName": "Offering Name",
-      "offeringCode": "Offering Code",
-      "prepNoFrom": "9300015000",
-      "prepNoTo": "9300015009"
-    }
-  ]
-}`
-
-const confirmPreparationJSONPlaceholder = `{
-  "responseHeader": {
-    "resourceGroupId": "123",
-    "resourceOrderId": "123",
-    "resultCode": "0",
-    "resultDesc": "OK",
-    "developerMessage": "",
-    "userSys": "SYS",
-    "reTransmit": "N"
-  },
-  "resourceItemList": [
-    {
-      "resourceName": "confirmPreparationPrepaid",
-      "resourceItemStatus": "Success",
-      "errorFlag": "1",
-      "resourceItemErrMessage": "Success",
-      "specialErrHandling": {
-        "suppCode": [],
-        "taskKeyCondition": [],
-        "taskDeveloperMessage": []
-      },
-      "confirmPrepResponse": [
-        {
-          "simSerialNo": "89550000000000000000",
-          "mobileNo": "0983044861",
-          "prepNo": "9300015000",
-          "expiryDate": "31/06/2026",
-          "regionCode": "C301",
-          "classifyCode": "N",
-          "patternNo": "51",
-          "numberStatusTo": "B",
-          "simType": "USIM",
-          "package": "PKG01",
-          "packageRowId": "1234567890",
-          "luckyName": "Mor_AIS",
-          "luckyType": "Good Money & Love",
-          "qrCodeInfo": "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF"
-        }
-      ]
-    }
-  ]
-}`
-
-// ServiceProvisioningMockPlaceholder returns example response JSON for setting a mock
-// from the TUI for the given serviceProvisioning resourceName.
 func ServiceProvisioningMockPlaceholder(resourceName string) string {
 	switch resourceName {
 	case "lockNumberByCriteriaPrepaid":
-		return LockNumberByCriteriaJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserLockNumberByCriteriaPrepaid)
 	case "lockNumberByCriteriaPostpaid":
-		return strings.Replace(LockNumberByCriteriaJSONPlaceholder, "lockNumberByCriteriaPrepaid", "lockNumberByCriteriaPostpaid", 1)
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserLockNumberByCriteriaPostpaid)
 	case "lockNumberByMobilePrepaid":
-		return lockNumberByMobileJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserLockNumberByMobilePrepaid)
 	case "lockNumberByMobilePostpaid":
-		return strings.Replace(lockNumberByMobileJSONPlaceholder, "lockNumberByMobilePrepaid", "lockNumberByMobilePostpaid", 1)
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserLockNumberByMobilePostpaid)
 	case "clearNumberPreparationPrepaid":
-		return clearNumberPreparationJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserClearNumberPreparationPrepaid)
 	case "clearNumberPreparationPostpaid":
-		return strings.Replace(clearNumberPreparationJSONPlaceholder, "clearNumberPreparationPrepaid", "clearNumberPreparationPostpaid", 1)
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserClearNumberPreparationPostpaid)
 	case "querySimInfo":
-		return querySimInfoJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserQuerySimInfo)
 	case "requestPrepNoPrepaid":
-		return requestPrepNoJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserRequestPrepNoPrepaid)
 	case "requestPrepNoPostpaid":
-		return strings.Replace(requestPrepNoJSONPlaceholder, "requestPrepNoPrepaid", "requestPrepNoPostpaid", 1)
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserRequestPrepNoPostpaid)
 	case "confirmPreparationPrepaid":
-		return confirmPreparationJSONPlaceholder
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserConfirmPreparationPrepaid)
 	case "confirmPreparationPostpaid":
-		return strings.Replace(confirmPreparationJSONPlaceholder, "confirmPreparationPrepaid", "confirmPreparationPostpaid", 1)
+		return MarshalJSONForPlaceholder(serviceprovisioning.UserConfirmPreparationPostpaid)
 	default:
 		return "{}"
 	}
 }
 
-const phxRequestESIMResponsePlaceholder = `{
-  "resultCode": "20000",
-  "resultDesc": "Success",
-  "resultData": {
-    "newSimItem": {
-      "imsi": "1234567890",
-      "qrCodeInfo": "LPA:1$example$80D88923FADA3C76656D344AF",
-      "regionCode": "C301",
-      "serialNo": "89550000000000000000"
-    }
-  }
-}`
-
-const phxNewRegistrationResponsePlaceholder = `{
-  "resultCode": "20000",
-  "resultDesc": "Success"
-}`
-
-// PHXMockPlaceholder returns example response JSON for the given PHX API name (see PHXApis).
 func PHXMockPlaceholder(apiName string) string {
 	switch apiName {
 	case "requestESIM":
-		return phxRequestESIMResponsePlaceholder
+		return MarshalJSONForPlaceholder(phx.UserRequestESIM)
 	case "newRegistration":
-		return phxNewRegistrationResponsePlaceholder
+		return MarshalJSONForPlaceholder(phx.UserNewRegistration)
 	default:
 		return "{}"
 	}

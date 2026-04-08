@@ -406,6 +406,8 @@ func (m model) View() string {
 		b.WriteString(styleHelp.Render("Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("F4 clear editor · Ctrl+Home / Ctrl+End jump document"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("(clear editor + save) to reset mock to default"))
 		return b.String()
 	}
 

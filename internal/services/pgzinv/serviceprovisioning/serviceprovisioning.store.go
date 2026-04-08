@@ -23,6 +23,10 @@ var UserConfirmPreparationPrepaid *ConfirmPreparationResponse
 var UserConfirmPreparationPostpaid *ConfirmPreparationResponse
 
 func (s *serviceProvisioning) SetUserLockNumberByCriteriaPrepaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserLockNumberByCriteriaPrepaid = nil
+		return nil
+	}
 	response := LockNumberByCriteriaResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -40,6 +44,10 @@ func (s *serviceProvisioning) SetUserLockNumberByCriteriaPrepaid(jsonData json.R
 }
 
 func (s *serviceProvisioning) SetUserLockNumberByCriteriaPostpaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserLockNumberByCriteriaPostpaid = nil
+		return nil
+	}
 	response := LockNumberByCriteriaResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -57,6 +65,10 @@ func (s *serviceProvisioning) SetUserLockNumberByCriteriaPostpaid(jsonData json.
 }
 
 func (s *serviceProvisioning) SetUserLockNumberByMobilePrepaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserLockNumberByMobilePrepaid = nil
+		return nil
+	}
 	response := LockNumberByMobileResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -70,6 +82,10 @@ func (s *serviceProvisioning) SetUserLockNumberByMobilePrepaid(jsonData json.Raw
 }
 
 func (s *serviceProvisioning) SetUserLockNumberByMobilePostpaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserLockNumberByMobilePostpaid = nil
+		return nil
+	}
 	response := LockNumberByMobileResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -83,6 +99,10 @@ func (s *serviceProvisioning) SetUserLockNumberByMobilePostpaid(jsonData json.Ra
 }
 
 func (s *serviceProvisioning) SetUserClearNumberPreparationPrepaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserClearNumberPreparationPrepaid = nil
+		return nil
+	}
 	response := ClearNumberPreparationResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -96,6 +116,10 @@ func (s *serviceProvisioning) SetUserClearNumberPreparationPrepaid(jsonData json
 }
 
 func (s *serviceProvisioning) SetUserClearNumberPreparationPostpaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserClearNumberPreparationPostpaid = nil
+		return nil
+	}
 	response := ClearNumberPreparationResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -109,6 +133,10 @@ func (s *serviceProvisioning) SetUserClearNumberPreparationPostpaid(jsonData jso
 }
 
 func (s *serviceProvisioning) SetUserQuerySimInfo(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserQuerySimInfo = nil
+		return nil
+	}
 	response := QuerySimInfoResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -122,6 +150,10 @@ func (s *serviceProvisioning) SetUserQuerySimInfo(jsonData json.RawMessage) erro
 }
 
 func (s *serviceProvisioning) SetUserRequestPrepNoPrepaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserRequestPrepNoPrepaid = nil
+		return nil
+	}
 	response := RequestPrepNoResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -135,6 +167,10 @@ func (s *serviceProvisioning) SetUserRequestPrepNoPrepaid(jsonData json.RawMessa
 }
 
 func (s *serviceProvisioning) SetUserRequestPrepNoPostpaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserRequestPrepNoPostpaid = nil
+		return nil
+	}
 	response := RequestPrepNoResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -148,6 +184,10 @@ func (s *serviceProvisioning) SetUserRequestPrepNoPostpaid(jsonData json.RawMess
 }
 
 func (s *serviceProvisioning) SetUserConfirmPreparationPrepaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserConfirmPreparationPrepaid = nil
+		return nil
+	}
 	response := ConfirmPreparationResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
@@ -161,6 +201,10 @@ func (s *serviceProvisioning) SetUserConfirmPreparationPrepaid(jsonData json.Raw
 }
 
 func (s *serviceProvisioning) SetUserConfirmPreparationPostpaid(jsonData json.RawMessage) error {
+	if jsonData == nil || string(jsonData) == "" {
+		UserConfirmPreparationPostpaid = nil
+		return nil
+	}
 	response := ConfirmPreparationResponse{}
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {

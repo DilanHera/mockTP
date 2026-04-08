@@ -35,3 +35,19 @@ func (h *DTHandler) ListOrderNoByDonoHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *DTHandler) PickingDocumentHandler(w http.ResponseWriter, r *http.Request) {
+	request := &PickingDocumentRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := h.dt.PickingDocument(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(response)
+}
