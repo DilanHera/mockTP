@@ -33,7 +33,7 @@ type LockNumberByCriteriaResponse struct {
 
 type LockNumberByCriteriaResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	Key                 string                  `json:"key" validate:"omitempty"`
+	Key                 string                    `json:"key" validate:"omitempty"`
 	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse" validate:"required,min=1,dive"`
 }
 
@@ -48,42 +48,67 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 	if input.ResourceName == "lockNumberByCriteriaPostpaid" && UserLockNumberByCriteriaPostpaid != nil {
 		return *UserLockNumberByCriteriaPostpaid, nil
 	}
-	response := LockNumberByCriteriaResponse{
-		ResponseHeader: pgzinvmodel.ResponseHeader{
-			ResourceGroupId:  requestHeader.ResourceGroupId,
-			ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
-			ReTransmit:       "0",
-			UserSys:          requestHeader.UserSys,
-			DeveloperMessage: "",
-			ResultCode:       "20000",
-			ResultDesc:       "Success",
-		},
-		ResourceItemList: []LockNumberByCriteriaResponseItem{
-			{
-				ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
-					ResourceName:           input.ResourceName,
-					ResourceItemStatus:     "Success",
-					ErrorFlag:              "1",
-					ResourceItemErrMessage: "Success",
-					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
-						SuppCode:             []string{},
-						TaskKeyCondition:     []string{},
-						TaskDeveloperMessage: []string{},
+	response := &LockNumberByCriteriaResponse{}
+	if s.app.ResponseState == "ERROR" {
+		response = &LockNumberByCriteriaResponse{
+			ResponseHeader: pgzinvmodel.ResponseHeader{
+				ResourceGroupId:  requestHeader.ResourceGroupId,
+				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+				ReTransmit:       "0",
+				UserSys:          requestHeader.UserSys,
+				DeveloperMessage: "",
+				ResultCode:       "50000",
+				ResultDesc:       "Failed: lockNumberByCriteriaPostpaid (1) mobile not enough.",
+			},
+			ResourceItemList: []LockNumberByCriteriaResponseItem{
+				{
+					ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
+						ResourceName:           input.ResourceName,
+						ResourceItemStatus:     "Failed",
+						ResourceItemErrMessage: "mobile not enough.",
+						ErrorFlag:              "0",
 					},
 				},
-				Key:                 "1234567",
-				RequestPrepResponse: []RequestPrepResponseItem{},
 			},
-		},
+		}
+	} else {
+		response = &LockNumberByCriteriaResponse{
+			ResponseHeader: pgzinvmodel.ResponseHeader{
+				ResourceGroupId:  requestHeader.ResourceGroupId,
+				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+				ReTransmit:       "0",
+				UserSys:          requestHeader.UserSys,
+				DeveloperMessage: "",
+				ResultCode:       "20000",
+				ResultDesc:       "Success",
+			},
+			ResourceItemList: []LockNumberByCriteriaResponseItem{
+				{
+					ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
+						ResourceName:           input.ResourceName,
+						ResourceItemStatus:     "Success",
+						ErrorFlag:              "1",
+						ResourceItemErrMessage: "Success",
+						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+							SuppCode:             []string{},
+							TaskKeyCondition:     []string{},
+							TaskDeveloperMessage: []string{},
+						},
+					},
+					Key:                 "1234567",
+					RequestPrepResponse: []RequestPrepResponseItem{},
+				},
+			},
+		}
+		quantity, err := strconv.Atoi(input.Quantity)
+		if err != nil {
+			return *response, err
+		}
+		for range quantity {
+			response.ResourceItemList[0].RequestPrepResponse = append(response.ResourceItemList[0].RequestPrepResponse, RequestPrepResponseItem{
+				MobileNo: fmt.Sprintf("061%07d", rand.Intn(10000000)),
+			})
+		}
 	}
-	quantity, err := strconv.Atoi(input.Quantity)
-	if err != nil {
-		return response, err
-	}
-	for range quantity {
-		response.ResourceItemList[0].RequestPrepResponse = append(response.ResourceItemList[0].RequestPrepResponse, RequestPrepResponseItem{
-			MobileNo: fmt.Sprintf("061%07d", rand.Intn(10000000)),
-		})
-	}
-	return response, nil
+	return *response, nil
 }

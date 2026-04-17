@@ -175,6 +175,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch msg.String() {
+		case "ctrl+t", "cmd+t":
+			if m.app.ResponseState == "SUCCESS" {
+				m.app.ResponseState = "ERROR"
+			} else {
+				m.app.ResponseState = "SUCCESS"
+			}
+			return m, nil
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "esc":
@@ -431,6 +438,12 @@ func (m model) View() string {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(styleHelp.Render("↑/↓ · Enter open · Esc back (root: quit) · q quit"))
+	if m.app.ResponseState == "SUCCESS" {
+		b.WriteString(styleOK.Render("Response State: " + m.app.ResponseState))
+	} else {
+		b.WriteString("Response State: " + styleErr.Render(m.app.ResponseState))
+	}
+	b.WriteString("\n")
+	b.WriteString(styleHelp.Render("↑/↓ · Enter open · Ctrl+T toggle response state · Esc back (root: quit) · q quit"))
 	return b.String()
 }
