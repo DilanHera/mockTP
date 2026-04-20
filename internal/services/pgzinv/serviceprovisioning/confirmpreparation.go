@@ -38,7 +38,7 @@ type ConfirmPreparationResponse struct {
 
 type ConfirmPreparationResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	ConfirmPrepResponse []ConfirmPrepResponseItem `json:"confirmPrepResponse" validate:"omitempty"`
+	ConfirmPrepResponse []ConfirmPrepResponseItem `json:"confirmPrepResponse,omitempty" validate:"omitempty"`
 }
 
 type ConfirmPrepResponseItem struct {
@@ -84,6 +84,11 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 						ResourceItemStatus:     "Failed",
 						ResourceItemErrMessage: "mobile and sim are status Registered.",
 						ErrorFlag:              "10",
+						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+							SuppCode:             []string{},
+							TaskKeyCondition:     []string{},
+							TaskDeveloperMessage: []string{},
+						},
 					},
 				},
 			},

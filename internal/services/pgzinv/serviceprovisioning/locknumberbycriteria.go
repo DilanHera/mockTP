@@ -33,8 +33,8 @@ type LockNumberByCriteriaResponse struct {
 
 type LockNumberByCriteriaResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	Key                 string                    `json:"key" validate:"omitempty"`
-	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse" validate:"required,min=1,dive"`
+	Key                 string                    `json:"key,omitempty" validate:"omitempty"`
+	RequestPrepResponse []RequestPrepResponseItem `json:"requestPrepResponse,omitempty" validate:"required,min=1,dive"`
 }
 
 type RequestPrepResponseItem struct {
@@ -67,6 +67,11 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 						ResourceItemStatus:     "Failed",
 						ResourceItemErrMessage: "mobile not enough.",
 						ErrorFlag:              "0",
+						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+							SuppCode:             []string{},
+							TaskKeyCondition:     []string{},
+							TaskDeveloperMessage: []string{},
+						},
 					},
 				},
 			},
