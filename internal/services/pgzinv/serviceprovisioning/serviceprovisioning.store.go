@@ -5,22 +5,73 @@ import (
 	"fmt"
 )
 
-var UserLockNumberByCriteriaPrepaid *LockNumberByCriteriaResponse
-var UserLockNumberByCriteriaPostpaid *LockNumberByCriteriaResponse
+var (
+	ResourceErrorStates = map[string]bool{
+		"lockNumberByCriteriaPrepaid":    false,
+		"lockNumberByCriteriaPostpaid":   false,
+		"lockNumberByMobilePrepaid":      false,
+		"lockNumberByMobilePostpaid":     false,
+		"clearNumberPreparationPrepaid":  false,
+		"clearNumberPreparationPostpaid": false,
+		"querySimInfo":                   false,
+		"requestPrepNoPrepaid":           false,
+		"requestPrepNoPostpaid":          false,
+		"confirmPreparationPrepaid":      false,
+		"confirmPreparationPostpaid":     false,
+	}
 
-var UserLockNumberByMobilePrepaid *LockNumberByMobileResponse
-var UserLockNumberByMobilePostpaid *LockNumberByMobileResponse
+	UserLockNumberByCriteriaPrepaid    *LockNumberByCriteriaResponse
+	UserLockNumberByCriteriaPostpaid   *LockNumberByCriteriaResponse
+	UserLockNumberByMobilePrepaid      *LockNumberByMobileResponse
+	UserLockNumberByMobilePostpaid     *LockNumberByMobileResponse
+	UserClearNumberPreparationPrepaid  *ClearNumberPreparationResponse
+	UserClearNumberPreparationPostpaid *ClearNumberPreparationResponse
+	UserQuerySimInfo                   *QuerySimInfoResponse
+	UserRequestPrepNoPrepaid           *RequestPrepNoResponse
+	UserRequestPrepNoPostpaid          *RequestPrepNoResponse
+	UserConfirmPreparationPrepaid      *ConfirmPreparationResponse
+	UserConfirmPreparationPostpaid     *ConfirmPreparationResponse
+)
 
-var UserClearNumberPreparationPrepaid *ClearNumberPreparationResponse
-var UserClearNumberPreparationPostpaid *ClearNumberPreparationResponse
+func IsResourceErrorState(resourceName string) bool {
+	return ResourceErrorStates[resourceName]
+}
 
-var UserQuerySimInfo *QuerySimInfoResponse
+func HasCustomResourceResponse(resourceName string) bool {
+	switch resourceName {
+	case "lockNumberByCriteriaPrepaid":
+		return UserLockNumberByCriteriaPrepaid != nil
+	case "lockNumberByCriteriaPostpaid":
+		return UserLockNumberByCriteriaPostpaid != nil
+	case "lockNumberByMobilePrepaid":
+		return UserLockNumberByMobilePrepaid != nil
+	case "lockNumberByMobilePostpaid":
+		return UserLockNumberByMobilePostpaid != nil
+	case "clearNumberPreparationPrepaid":
+		return UserClearNumberPreparationPrepaid != nil
+	case "clearNumberPreparationPostpaid":
+		return UserClearNumberPreparationPostpaid != nil
+	case "querySimInfo":
+		return UserQuerySimInfo != nil
+	case "requestPrepNoPrepaid":
+		return UserRequestPrepNoPrepaid != nil
+	case "requestPrepNoPostpaid":
+		return UserRequestPrepNoPostpaid != nil
+	case "confirmPreparationPrepaid":
+		return UserConfirmPreparationPrepaid != nil
+	case "confirmPreparationPostpaid":
+		return UserConfirmPreparationPostpaid != nil
+	default:
+		return false
+	}
+}
 
-var UserRequestPrepNoPrepaid *RequestPrepNoResponse
-var UserRequestPrepNoPostpaid *RequestPrepNoResponse
-
-var UserConfirmPreparationPrepaid *ConfirmPreparationResponse
-var UserConfirmPreparationPostpaid *ConfirmPreparationResponse
+func ToggleResourceErrorState(resourceName string) {
+	if _, ok := ResourceErrorStates[resourceName]; !ok {
+		return
+	}
+	ResourceErrorStates[resourceName] = !ResourceErrorStates[resourceName]
+}
 
 func (s *serviceProvisioning) SetUserLockNumberByCriteriaPrepaid(jsonData json.RawMessage) error {
 	if jsonData == nil || string(jsonData) == "" {
@@ -35,10 +86,6 @@ func (s *serviceProvisioning) SetUserLockNumberByCriteriaPrepaid(jsonData json.R
 	if len(response.ResourceItemList) > 0 && response.ResourceItemList[0].ResourceName != "lockNumberByCriteriaPrepaid" {
 		return fmt.Errorf("wrong resource name, expected: lockNumberByCriteriaPrepaid")
 	}
-	// err := s.app.Helper.UnmarshalAndValidate(jsonData, &response)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to validate: %w", err)
-	// }
 	UserLockNumberByCriteriaPrepaid = &response
 	return nil
 }
@@ -56,10 +103,6 @@ func (s *serviceProvisioning) SetUserLockNumberByCriteriaPostpaid(jsonData json.
 	if len(response.ResourceItemList) > 0 && response.ResourceItemList[0].ResourceName != "lockNumberByCriteriaPostpaid" {
 		return fmt.Errorf("wrong resource name, expected: lockNumberByCriteriaPostpaid")
 	}
-	// err := s.app.Helper.UnmarshalAndValidate(jsonData, &response)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to validate: %w", err)
-	// }
 	UserLockNumberByCriteriaPostpaid = &response
 	return nil
 }

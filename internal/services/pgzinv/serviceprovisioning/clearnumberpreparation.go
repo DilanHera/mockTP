@@ -25,7 +25,35 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 	if UserClearNumberPreparationPostpaid != nil && input.ResourceName == "clearNumberPreparationPostpaid" {
 		return UserClearNumberPreparationPostpaid, nil
 	}
-	response := &ClearNumberPreparationResponse{
+
+	if IsResourceErrorState(input.ResourceName) {
+		return &ClearNumberPreparationResponse{
+			ResponseHeader: pgzinvmodel.ResponseHeader{
+				ResourceGroupId:  requestHeader.ResourceGroupId,
+				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+				ReTransmit:       "0",
+				UserSys:          requestHeader.UserSys,
+				DeveloperMessage: "",
+				ResultCode:       "50000",
+				ResultDesc:       "Failed: " + input.ResourceName + " (1)",
+			},
+			ResourceItemList: []pgzinvmodel.ResourceItemListBase{
+				{
+					ResourceName:           input.ResourceName,
+					ResourceItemStatus:     "Failed",
+					ErrorFlag:              "0",
+					ResourceItemErrMessage: "Failed: " + input.ResourceName + " (1)",
+					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+						SuppCode:             []string{},
+						TaskKeyCondition:     []string{},
+						TaskDeveloperMessage: []string{},
+					},
+				},
+			},
+		}, nil
+	}
+
+	return &ClearNumberPreparationResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,
 			ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
@@ -35,6 +63,18 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 			ResultCode:       "20000",
 			ResultDesc:       "Success",
 		},
-	}
-	return response, nil
+		ResourceItemList: []pgzinvmodel.ResourceItemListBase{
+			{
+				ResourceName:           input.ResourceName,
+				ResourceItemStatus:     "Success",
+				ErrorFlag:              "1",
+				ResourceItemErrMessage: "Success",
+				SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+					SuppCode:             []string{},
+					TaskKeyCondition:     []string{},
+					TaskDeveloperMessage: []string{},
+				},
+			},
+		},
+	}, nil
 }

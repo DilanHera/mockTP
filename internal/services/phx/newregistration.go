@@ -43,6 +43,14 @@ func (p *phx) NewRegistration(input *NewRegistrationRequest) (*NewRegistrationRe
 	if UserNewRegistration != nil {
 		return UserNewRegistration, nil
 	}
+
+	if IsAPIErrorState("newRegistration") {
+		return &NewRegistrationResponse{
+			ResultCode: "50000",
+			ResultDesc: "Failed: newRegistration (1)",
+		}, nil
+	}
+
 	response := &NewRegistrationResponse{
 		ResultCode: "20000",
 		ResultDesc: "Success",

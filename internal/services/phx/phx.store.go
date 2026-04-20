@@ -5,8 +5,37 @@ import (
 	"fmt"
 )
 
-var UserRequestESIM *RequestESIMResponse
-var UserNewRegistration *NewRegistrationResponse
+var (
+	APIErrorStates = map[string]bool{
+		"requestESIM":     false,
+		"newRegistration": false,
+	}
+
+	UserRequestESIM     *RequestESIMResponse
+	UserNewRegistration *NewRegistrationResponse
+)
+
+func IsAPIErrorState(apiName string) bool {
+	return APIErrorStates[apiName]
+}
+
+func HasCustomAPIResponse(apiName string) bool {
+	switch apiName {
+	case "requestESIM":
+		return UserRequestESIM != nil
+	case "newRegistration":
+		return UserNewRegistration != nil
+	default:
+		return false
+	}
+}
+
+func ToggleAPIErrorState(apiName string) {
+	if _, ok := APIErrorStates[apiName]; !ok {
+		return
+	}
+	APIErrorStates[apiName] = !APIErrorStates[apiName]
+}
 
 func (p *phx) SetUserRequestESIM(jsonData json.RawMessage) error {
 	if jsonData == nil || string(jsonData) == "" {

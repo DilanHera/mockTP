@@ -4,16 +4,12 @@ import (
 	internal "github.com/DilanHera/mockTP/internal"
 )
 
-var responseState string = "SUCCESS"
-
 type App struct {
-	Helper        internal.Helper
-	ResponseState string
+	Helper internal.Helper
 }
 
 func NewApp() *App {
 	return &App{
-		Helper:        internal.NewHelper(),
-		ResponseState: responseState,
+		Helper: internal.NewHelper(),
 	}
 }

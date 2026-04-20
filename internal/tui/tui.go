@@ -176,11 +176,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch msg.String() {
 		case "ctrl+t", "cmd+t":
-			if m.app.ResponseState == "SUCCESS" {
-				m.app.ResponseState = "ERROR"
-			} else {
-				m.app.ResponseState = "SUCCESS"
-			}
+			m.toggleErrorState()
 			return m, nil
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -215,6 +211,64 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, nil
+}
+
+func (m model) toggleErrorState() (model, tea.Cmd) {
+	switch m.screen {
+	case screenServiceProvisioning:
+		if m.cursor < 0 || m.cursor >= len(ServiceProvisioningResources) {
+			return m, nil
+		}
+		serviceprovisioning.ToggleResourceErrorState(ServiceProvisioningResources[m.cursor])
+		return m, nil
+	case screenPHX:
+		if m.cursor < 0 || m.cursor >= len(PHXApis) {
+			return m, nil
+		}
+		phx.ToggleAPIErrorState(PHXApis[m.cursor])
+		return m, nil
+	}
+	return m, nil
+}
+
+func serviceProvisioningStateIndicator(resource string) string {
+	if serviceprovisioning.HasCustomResourceResponse(resource) {
+		return styleCustom.Render("C")
+	}
+	if serviceprovisioning.IsResourceErrorState(resource) {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func serviceProvisioningLabelWidth() int {
+	width := 0
+	for _, resource := range ServiceProvisioningResources {
+		if len(resource) > width {
+			width = len(resource)
+		}
+	}
+	return width
+}
+
+func phxStateIndicator(api string) string {
+	if phx.HasCustomAPIResponse(api) {
+		return styleCustom.Render("C")
+	}
+	if phx.IsAPIErrorState(api) {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func phxLabelWidth() int {
+	width := 0
+	for _, api := range PHXApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
 }
 
 func (m model) enter() (model, tea.Cmd) {
@@ -427,9 +481,25 @@ func (m model) View() string {
 	b.WriteString("\n\n")
 
 	for i, label := range m.labels() {
-		line := "  " + label
+		displayLabel := label
+		if m.screen == screenServiceProvisioning {
+			padding := serviceProvisioningLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + serviceProvisioningStateIndicator(label)
+		}
+		if m.screen == screenPHX {
+			padding := phxLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + phxStateIndicator(label)
+		}
+
+		line := "  " + displayLabel
 		if i == m.cursor {
-			line = styleMenuSel.Render("▸ " + label)
+			line = styleMenuSel.Render("▸ " + displayLabel)
 		} else {
 			line = styleMenu.Render(line)
 		}
@@ -438,12 +508,21 @@ func (m model) View() string {
 	}
 
 	b.WriteString("\n")
-	if m.app.ResponseState == "SUCCESS" {
-		b.WriteString(styleOK.Render("Response State: " + m.app.ResponseState))
-	} else {
-		b.WriteString("Response State: " + styleErr.Render(m.app.ResponseState))
+	switch m.screen {
+	case screenServiceProvisioning:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · Ctrl+T toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Note: Ctrl+T toggles only between " + styleOK.Render("S") + " and " + styleErr.Render("E") + ". To change " + styleCustom.Render("C") + ", reset the custom JSON to default first."))
+	case screenPHX:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · Ctrl+T toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Note: Ctrl+T toggles only between " + styleOK.Render("S") + " and " + styleErr.Render("E") + ". To change " + styleCustom.Render("C") + ", reset the custom JSON to default first."))
+	default:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open · Esc back (root: quit) · q quit"))
 	}
-	b.WriteString("\n")
-	b.WriteString(styleHelp.Render("↑/↓ · Enter open · Ctrl+T toggle response state · Esc back (root: quit) · q quit"))
 	return b.String()
 }

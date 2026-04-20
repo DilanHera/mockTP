@@ -44,7 +44,7 @@ func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceIte
 		return UserQuerySimInfo, nil
 	}
 	var response *QuerySimInfoResponse
-	if s.app.ResponseState == "ERROR" {
+	if IsResourceErrorState(input.ResourceName) {
 		response = &QuerySimInfoResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

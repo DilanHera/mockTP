@@ -22,6 +22,34 @@ func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileReques
 	if UserLockNumberByMobilePostpaid != nil && input.ResourceName == "lockNumberByMobilePostpaid" {
 		return UserLockNumberByMobilePostpaid, nil
 	}
+
+	if IsResourceErrorState(input.ResourceName) {
+		return &LockNumberByMobileResponse{
+			ResponseHeader: pgzinvmodel.ResponseHeader{
+				ResourceGroupId:  requestHeader.ResourceGroupId,
+				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+				ReTransmit:       "0",
+				UserSys:          requestHeader.UserSys,
+				DeveloperMessage: "",
+				ResultCode:       "50000",
+				ResultDesc:       "Failed: " + input.ResourceName + " (1) mobile not found.",
+			},
+			ResourceItemList: []pgzinvmodel.ResourceItemListBase{
+				{
+					ResourceName:           input.ResourceName,
+					ResourceItemStatus:     "Failed",
+					ErrorFlag:              "0",
+					ResourceItemErrMessage: "mobile not found.",
+					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+						SuppCode:             []string{},
+						TaskKeyCondition:     []string{},
+						TaskDeveloperMessage: []string{},
+					},
+				},
+			},
+		}, nil
+	}
+
 	response := &LockNumberByMobileResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,

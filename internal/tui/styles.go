@@ -26,8 +26,12 @@ var (
 			Foreground(lipgloss.AdaptiveColor{Light: "160", Dark: "203"})
 
 	styleOK = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.AdaptiveColor{Light: "28", Dark: "121"})
+
+	styleCustom = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.AdaptiveColor{Light: "28", Dark: "121"})
+			Foreground(lipgloss.AdaptiveColor{Light: "172", Dark: "228"})
 
 	styleHelp = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"})

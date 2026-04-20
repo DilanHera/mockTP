@@ -33,5 +33,6 @@ type serviceProvisioning struct {
 }
 
 func NewServiceProvisioning(app *app.App) ServiceProvisioning {
-	return &serviceProvisioning{app: app}
+	return &serviceProvisioning{
+		app: app}
 }

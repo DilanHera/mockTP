@@ -49,7 +49,7 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 		return *UserLockNumberByCriteriaPostpaid, nil
 	}
 	response := &LockNumberByCriteriaResponse{}
-	if s.app.ResponseState == "ERROR" {
+	if IsResourceErrorState(input.ResourceName) {
 		response = &LockNumberByCriteriaResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

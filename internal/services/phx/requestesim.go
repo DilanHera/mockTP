@@ -37,7 +37,15 @@ func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, erro
 	if UserRequestESIM != nil {
 		return UserRequestESIM, nil
 	}
-	response := &RequestESIMResponse{
+
+	if IsAPIErrorState("requestESIM") {
+		return &RequestESIMResponse{
+			ResultCode: "50000",
+			ResultDesc: "Failed: requestESIM (1)",
+		}, nil
+	}
+
+	return &RequestESIMResponse{
 		ResultCode: "20000",
 		ResultDesc: "Success",
 		ResultData: ResultData{
@@ -48,7 +56,5 @@ func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, erro
 				SerialNo:   "1234567890",
 			},
 		},
-	}
-	UserRequestESIM = response
-	return response, nil
+	}, nil
 }

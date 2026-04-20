@@ -39,6 +39,36 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 	if UserRequestPrepNoPostpaid != nil && input.ResourceName == "requestPrepNoPostpaid" {
 		return UserRequestPrepNoPostpaid, nil
 	}
+
+	if IsResourceErrorState(input.ResourceName) {
+		return &RequestPrepNoResponse{
+			ResponseHeader: pgzinvmodel.ResponseHeader{
+				ResourceGroupId:  requestHeader.ResourceGroupId,
+				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+				ReTransmit:       "0",
+				UserSys:          requestHeader.UserSys,
+				DeveloperMessage: "",
+				ResultCode:       "50000",
+				ResultDesc:       "Failed: " + input.ResourceName + " (1) preparation number not available.",
+			},
+			ResourceItemList: []RequestPrepNoResponseItem{
+				{
+					ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
+						ResourceName:           input.ResourceName,
+						ResourceItemStatus:     "Failed",
+						ErrorFlag:              "0",
+						ResourceItemErrMessage: "preparation number not available.",
+						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+							SuppCode:             []string{},
+							TaskKeyCondition:     []string{},
+							TaskDeveloperMessage: []string{},
+						},
+					},
+				},
+			},
+		}, nil
+	}
+
 	response := &RequestPrepNoResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,

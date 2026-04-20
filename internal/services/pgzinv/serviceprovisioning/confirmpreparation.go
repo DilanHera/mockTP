@@ -66,7 +66,7 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 		return *UserConfirmPreparationPostpaid, nil
 	}
 	response := &ConfirmPreparationResponse{}
-	if s.app.ResponseState == "ERROR" {
+	if IsResourceErrorState(input.ResourceName) {
 		response = &ConfirmPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ReTransmit:       "0",
