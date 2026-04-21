@@ -42,14 +42,17 @@ type RequestPrepResponseItem struct {
 }
 
 func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (LockNumberByCriteriaResponse, error) {
-	if input.ResourceName == "lockNumberByCriteriaPrepaid" && UserLockNumberByCriteriaPrepaid != nil {
-		return *UserLockNumberByCriteriaPrepaid, nil
-	}
-	if input.ResourceName == "lockNumberByCriteriaPostpaid" && UserLockNumberByCriteriaPostpaid != nil {
-		return *UserLockNumberByCriteriaPostpaid, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if input.ResourceName == "lockNumberByCriteriaPrepaid" && UserLockNumberByCriteriaPrepaid != nil {
+			return *UserLockNumberByCriteriaPrepaid, nil
+		}
+		if input.ResourceName == "lockNumberByCriteriaPostpaid" && UserLockNumberByCriteriaPostpaid != nil {
+			return *UserLockNumberByCriteriaPostpaid, nil
+		}
+		return LockNumberByCriteriaResponse{}, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 	response := &LockNumberByCriteriaResponse{}
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		response = &LockNumberByCriteriaResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

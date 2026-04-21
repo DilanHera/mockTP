@@ -1,6 +1,10 @@
 package serviceprovisioning
 
-import pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+import (
+	"fmt"
+
+	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+)
 
 type QuerySimInfoRequestResourceItem struct {
 	ResourceName string `json:"resourceName" validate:"required"`
@@ -40,11 +44,14 @@ type SimSerialNoListItem struct {
 }
 
 func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*QuerySimInfoResponse, error) {
-	if UserQuerySimInfo != nil {
-		return UserQuerySimInfo, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if UserQuerySimInfo != nil {
+			return UserQuerySimInfo, nil
+		}
+		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 	var response *QuerySimInfoResponse
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		response = &QuerySimInfoResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

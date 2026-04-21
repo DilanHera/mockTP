@@ -1,6 +1,7 @@
 package serviceprovisioning
 
 import (
+	"fmt"
 	"strconv"
 
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
@@ -33,14 +34,17 @@ type RequestPrepNoResponseItem struct {
 }
 
 func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*RequestPrepNoResponse, error) {
-	if UserRequestPrepNoPrepaid != nil && input.ResourceName == "requestPrepNoPrepaid" {
-		return UserRequestPrepNoPrepaid, nil
-	}
-	if UserRequestPrepNoPostpaid != nil && input.ResourceName == "requestPrepNoPostpaid" {
-		return UserRequestPrepNoPostpaid, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if UserRequestPrepNoPrepaid != nil && input.ResourceName == "requestPrepNoPrepaid" {
+			return UserRequestPrepNoPrepaid, nil
+		}
+		if UserRequestPrepNoPostpaid != nil && input.ResourceName == "requestPrepNoPostpaid" {
+			return UserRequestPrepNoPostpaid, nil
+		}
+		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		return &RequestPrepNoResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

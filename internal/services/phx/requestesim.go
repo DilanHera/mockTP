@@ -1,5 +1,7 @@
 package phx
 
+import "fmt"
+
 type RequestESIMRequest struct {
 	Msisdn        string `json:"msisdn"`
 	ESimProject   string `json:"eSimProject"`
@@ -34,11 +36,14 @@ type NewSimItem struct {
 }
 
 func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, error) {
-	if UserRequestESIM != nil {
-		return UserRequestESIM, nil
+	if GetApiState("requestESIM") == "C" {
+		if UserRequestESIM != nil {
+			return UserRequestESIM, nil
+		}
+		return nil, fmt.Errorf("no custom response set for requestESIM")
 	}
 
-	if IsAPIErrorState("requestESIM") {
+	if GetApiState("requestESIM") == "E" {
 		return &RequestESIMResponse{
 			ResultCode: "50000",
 			ResultDesc: "Failed: requestESIM (1)",

@@ -1,6 +1,10 @@
 package serviceprovisioning
 
-import pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+import (
+	"fmt"
+
+	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+)
 
 type LockNumberByMobileRequestResourceItem struct {
 	ResourceName     string `json:"resourceName"`
@@ -16,14 +20,17 @@ type LockNumberByMobileResponse struct {
 }
 
 func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*LockNumberByMobileResponse, error) {
-	if UserLockNumberByMobilePrepaid != nil && input.ResourceName == "lockNumberByMobilePrepaid" {
-		return UserLockNumberByMobilePrepaid, nil
-	}
-	if UserLockNumberByMobilePostpaid != nil && input.ResourceName == "lockNumberByMobilePostpaid" {
-		return UserLockNumberByMobilePostpaid, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if UserLockNumberByMobilePrepaid != nil && input.ResourceName == "lockNumberByMobilePrepaid" {
+			return UserLockNumberByMobilePrepaid, nil
+		}
+		if UserLockNumberByMobilePostpaid != nil && input.ResourceName == "lockNumberByMobilePostpaid" {
+			return UserLockNumberByMobilePostpaid, nil
+		}
+		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		return &LockNumberByMobileResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

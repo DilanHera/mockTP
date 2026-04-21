@@ -49,7 +49,7 @@ type model struct {
 // Run starts the Bubble Tea program on the main goroutine.
 func Run(app *app.App) error {
 	p := tea.NewProgram(
-		model{app: app, cursor: 0},
+		&model{app: app, cursor: 0},
 		tea.WithAltScreen(),
 		// Windows / ConPTY: read keys from the real console when stdin is piped or wrapped.
 		tea.WithInputTTY(),
@@ -58,11 +58,11 @@ func Run(app *app.App) error {
 	return err
 }
 
-func (m model) Init() tea.Cmd {
+func (m *model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) itemCount() int {
+func (m *model) itemCount() int {
 	switch m.screen {
 	case screenRoot:
 		return len(Services)
@@ -77,7 +77,7 @@ func (m model) itemCount() int {
 	}
 }
 
-func (m model) labels() []string {
+func (m *model) labels() []string {
 	switch m.screen {
 	case screenRoot:
 		return Services
@@ -92,7 +92,7 @@ func (m model) labels() []string {
 	}
 }
 
-func newServiceProvisioningMockTextarea(resourceName, value string) textarea.Model {
+func (m *model) newServiceProvisioningMockTextarea(resourceName, value string) textarea.Model {
 	t := textarea.New()
 	t.ShowLineNumbers = false
 	t.Prompt = ""
@@ -103,14 +103,14 @@ func newServiceProvisioningMockTextarea(resourceName, value string) textarea.Mod
 	t.CharLimit = 256 * 1024
 	content := value
 	if content == "" {
-		content = ServiceProvisioningMockPlaceholder(resourceName)
+		content = m.MarshalJSONForPlaceholder(resourceName)
 	}
 	t.SetValue(content)
 	applyTextareaTheme(&t)
 	return t
 }
 
-func newPHXMockTextarea(apiName, value string) textarea.Model {
+func (m *model) newPHXMockTextarea(apiName, value string) textarea.Model {
 	t := textarea.New()
 	t.ShowLineNumbers = false
 	t.Prompt = ""
@@ -118,7 +118,7 @@ func newPHXMockTextarea(apiName, value string) textarea.Model {
 	t.CharLimit = 256 * 1024
 	content := value
 	if content == "" {
-		content = PHXMockPlaceholder(apiName)
+		content = m.MarshalJSONForPlaceholder(apiName)
 	}
 	t.SetValue(content)
 	applyTextareaTheme(&t)
@@ -137,7 +137,7 @@ func clearSaveNoticeAfter(d time.Duration) tea.Cmd {
 	return tea.Tick(d, func(time.Time) tea.Msg { return clearSaveNoticeMsg{} })
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case clearSaveNoticeMsg:
 		m.saveNotice = ""
@@ -146,7 +146,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		if isJSONMockScreen(m.screen) {
-			layoutJSONEditor(&m)
+			layoutJSONEditor(m)
 			var cmd tea.Cmd
 			m.ta, cmd = m.ta.Update(msg)
 			return m, cmd
@@ -163,7 +163,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "f4":
 				m.jsonErr = ""
 				m.ta.Reset()
-				layoutJSONEditor(&m)
+				layoutJSONEditor(m)
 				return m, m.ta.Focus()
 			}
 			if isJSONSubmit(msg) {
@@ -175,7 +175,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch msg.String() {
-		case "ctrl+t", "cmd+t":
+		case "t", "T":
 			m.toggleErrorState()
 			return m, nil
 		case "ctrl+c", "q":
@@ -219,23 +219,23 @@ func (m model) toggleErrorState() (model, tea.Cmd) {
 		if m.cursor < 0 || m.cursor >= len(ServiceProvisioningResources) {
 			return m, nil
 		}
-		serviceprovisioning.ToggleResourceErrorState(ServiceProvisioningResources[m.cursor])
+		serviceprovisioning.ToggleResourceState(ServiceProvisioningResources[m.cursor], m.app)
 		return m, nil
 	case screenPHX:
 		if m.cursor < 0 || m.cursor >= len(PHXApis) {
 			return m, nil
 		}
-		phx.ToggleAPIErrorState(PHXApis[m.cursor])
+		phx.ToggleApiState(PHXApis[m.cursor], m.app)
 		return m, nil
 	}
 	return m, nil
 }
 
 func serviceProvisioningStateIndicator(resource string) string {
-	if serviceprovisioning.HasCustomResourceResponse(resource) {
+	if serviceprovisioning.GetResourceState(resource) == "C" {
 		return styleCustom.Render("C")
 	}
-	if serviceprovisioning.IsResourceErrorState(resource) {
+	if serviceprovisioning.GetResourceState(resource) == "E" {
 		return styleErr.Render("E")
 	}
 	return styleOK.Render("S")
@@ -252,10 +252,10 @@ func serviceProvisioningLabelWidth() int {
 }
 
 func phxStateIndicator(api string) string {
-	if phx.HasCustomAPIResponse(api) {
+	if phx.GetApiState(api) == "C" {
 		return styleCustom.Render("C")
 	}
-	if phx.IsAPIErrorState(api) {
+	if phx.GetApiState(api) == "E" {
 		return styleErr.Render("E")
 	}
 	return styleOK.Render("S")
@@ -271,7 +271,7 @@ func phxLabelWidth() int {
 	return width
 }
 
-func (m model) enter() (model, tea.Cmd) {
+func (m *model) enter() (*model, tea.Cmd) {
 	switch m.screen {
 	case screenRoot:
 		switch m.cursor {
@@ -300,8 +300,8 @@ func (m model) enter() (model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
-		m.ta = newServiceProvisioningMockTextarea(name, "")
-		layoutJSONEditor(&m)
+		m.ta = m.newServiceProvisioningMockTextarea(name, "")
+		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
 	case screenPHX:
@@ -314,15 +314,15 @@ func (m model) enter() (model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
-		m.ta = newPHXMockTextarea(name, "")
-		layoutJSONEditor(&m)
+		m.ta = m.newPHXMockTextarea(name, "")
+		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
 	}
 	return m, nil
 }
 
-func (m model) leaveJSONEditor() model {
+func (m *model) leaveJSONEditor() *model {
 	m.screen = m.jsonMockParent
 	m.jsonMockResource = ""
 	m.jsonErr = ""
@@ -330,7 +330,7 @@ func (m model) leaveJSONEditor() model {
 	return m
 }
 
-func (m model) submitMockJSON() (tea.Model, tea.Cmd) {
+func (m *model) submitMockJSON() (tea.Model, tea.Cmd) {
 	switch m.screen {
 	case screenServiceProvisioningMockJSON:
 		return m.submitServiceProvisioningMockJSON()
@@ -341,42 +341,15 @@ func (m model) submitMockJSON() (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
+func (m *model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	sp := serviceprovisioning.NewServiceProvisioning(m.app)
 	var err error
-	switch m.jsonMockResource {
-	case "lockNumberByCriteriaPrepaid":
-		err = sp.SetUserLockNumberByCriteriaPrepaid(raw)
-	case "lockNumberByCriteriaPostpaid":
-		err = sp.SetUserLockNumberByCriteriaPostpaid(raw)
-	case "lockNumberByMobilePrepaid":
-		err = sp.SetUserLockNumberByMobilePrepaid(raw)
-	case "lockNumberByMobilePostpaid":
-		err = sp.SetUserLockNumberByMobilePostpaid(raw)
-	case "clearNumberPreparationPrepaid":
-		err = sp.SetUserClearNumberPreparationPrepaid(raw)
-	case "clearNumberPreparationPostpaid":
-		err = sp.SetUserClearNumberPreparationPostpaid(raw)
-	case "querySimInfo":
-		err = sp.SetUserQuerySimInfo(raw)
-	case "requestPrepNoPrepaid":
-		err = sp.SetUserRequestPrepNoPrepaid(raw)
-	case "requestPrepNoPostpaid":
-		err = sp.SetUserRequestPrepNoPostpaid(raw)
-	case "confirmPreparationPrepaid":
-		err = sp.SetUserConfirmPreparationPrepaid(raw)
-	case "confirmPreparationPostpaid":
-		err = sp.SetUserConfirmPreparationPostpaid(raw)
-	default:
-		m.jsonErr = "internal: unknown serviceProvisioning resource"
-		return m, nil
-	}
+	err = m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenServiceProvisioningMockJSON
-		m.ta = newServiceProvisioningMockTextarea(m.jsonMockResource, m.ta.Value())
-		layoutJSONEditor(&m)
+		m.ta = m.newServiceProvisioningMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
 	}
@@ -388,24 +361,15 @@ func (m model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
-func (m model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
+func (m *model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	px := phx.NewPhx(m.app)
 	var err error
-	switch m.jsonMockResource {
-	case "requestESIM":
-		err = px.SetUserRequestESIM(raw)
-	case "newRegistration":
-		err = px.SetUserNewRegistration(raw)
-	default:
-		m.jsonErr = "internal: unknown PHX API"
-		return m, nil
-	}
+	err = m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenPHXMockJSON
-		m.ta = newPHXMockTextarea(m.jsonMockResource, m.ta.Value())
-		layoutJSONEditor(&m)
+		m.ta = m.newPHXMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
 	}
@@ -417,7 +381,7 @@ func (m model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
-func (m model) goBack() model {
+func (m *model) goBack() *model {
 	switch m.screen {
 	case screenServiceProvisioningMockJSON, screenPHXMockJSON:
 		return m.leaveJSONEditor()
@@ -434,7 +398,7 @@ func (m model) goBack() model {
 	return m
 }
 
-func (m model) breadcrumb() string {
+func (m *model) breadcrumb() string {
 	switch m.screen {
 	case screenRoot:
 		return "mockTP"
@@ -453,7 +417,7 @@ func (m model) breadcrumb() string {
 	}
 }
 
-func (m model) View() string {
+func (m *model) View() string {
 	if isJSONMockScreen(m.screen) {
 		var b strings.Builder
 		b.WriteString(styleTitle.Render(m.breadcrumb()))
@@ -510,17 +474,17 @@ func (m model) View() string {
 	b.WriteString("\n")
 	switch m.screen {
 	case screenServiceProvisioning:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · Ctrl+T toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: Ctrl+T toggles only between " + styleOK.Render("S") + " and " + styleErr.Render("E") + ". To change " + styleCustom.Render("C") + ", reset the custom JSON to default first."))
+		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
 	case screenPHX:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · Ctrl+T toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: Ctrl+T toggles only between " + styleOK.Render("S") + " and " + styleErr.Render("E") + ". To change " + styleCustom.Render("C") + ", reset the custom JSON to default first."))
+		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
 	default:
 		b.WriteString(styleHelp.Render("↑/↓ · Enter open · Esc back (root: quit) · q quit"))
 	}

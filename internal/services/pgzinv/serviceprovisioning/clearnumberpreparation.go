@@ -1,6 +1,10 @@
 package serviceprovisioning
 
-import pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+import (
+	"fmt"
+
+	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+)
 
 type ClearNumberPreparationRequestResourceItem struct {
 	ResourceName     string `json:"resourceName" validate:"required"`
@@ -19,14 +23,17 @@ type ClearNumberPreparationResponse struct {
 }
 
 func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*ClearNumberPreparationResponse, error) {
-	if UserClearNumberPreparationPrepaid != nil && input.ResourceName == "clearNumberPreparationPrepaid" {
-		return UserClearNumberPreparationPrepaid, nil
-	}
-	if UserClearNumberPreparationPostpaid != nil && input.ResourceName == "clearNumberPreparationPostpaid" {
-		return UserClearNumberPreparationPostpaid, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if UserClearNumberPreparationPrepaid != nil && input.ResourceName == "clearNumberPreparationPrepaid" {
+			return UserClearNumberPreparationPrepaid, nil
+		}
+		if UserClearNumberPreparationPostpaid != nil && input.ResourceName == "clearNumberPreparationPostpaid" {
+			return UserClearNumberPreparationPostpaid, nil
+		}
+		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		return &ClearNumberPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

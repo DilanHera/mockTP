@@ -9,6 +9,8 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/router"
+	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
+	"github.com/DilanHera/mockTP/internal/services/phx"
 	"github.com/DilanHera/mockTP/internal/tui"
 )
 
@@ -21,6 +23,9 @@ func main() {
 	}
 	app := app.NewApp()
 	r := router.SetupRouter(app)
+
+	serviceprovisioning.InitResources(app)
+	phx.InitApis(app)
 
 	fmt.Fprintln(os.Stderr, "HTTP server listening on :3001")
 
@@ -38,9 +43,9 @@ func main() {
 }
 
 func getVersion() string {
-    info, ok := debug.ReadBuildInfo()
-    if !ok {
-        return "unknown"
-    }
-    return info.Main.Version
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
+	}
+	return info.Main.Version
 }

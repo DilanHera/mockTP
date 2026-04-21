@@ -1,6 +1,10 @@
 package serviceprovisioning
 
-import pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+import (
+	"fmt"
+
+	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
+)
 
 type ConfirmPreparationRequestResourceItem struct {
 	ResourceName   string `json:"resourceName" validate:"required"`
@@ -59,14 +63,17 @@ type ConfirmPrepResponseItem struct {
 }
 
 func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (ConfirmPreparationResponse, error) {
-	if UserConfirmPreparationPrepaid != nil && input.ResourceName == "confirmPreparationPrepaid" {
-		return *UserConfirmPreparationPrepaid, nil
-	}
-	if UserConfirmPreparationPostpaid != nil && input.ResourceName == "confirmPreparationPostpaid" {
-		return *UserConfirmPreparationPostpaid, nil
+	if GetResourceState(input.ResourceName) == "C" {
+		if UserConfirmPreparationPrepaid != nil && input.ResourceName == "confirmPreparationPrepaid" {
+			return *UserConfirmPreparationPrepaid, nil
+		}
+		if UserConfirmPreparationPostpaid != nil && input.ResourceName == "confirmPreparationPostpaid" {
+			return *UserConfirmPreparationPostpaid, nil
+		}
+		return ConfirmPreparationResponse{}, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 	response := &ConfirmPreparationResponse{}
-	if IsResourceErrorState(input.ResourceName) {
+	if GetResourceState(input.ResourceName) == "E" {
 		response = &ConfirmPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ReTransmit:       "0",

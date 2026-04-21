@@ -2,65 +2,57 @@ package phx
 
 import (
 	"encoding/json"
-	"fmt"
+
+	"github.com/DilanHera/mockTP/internal/app"
 )
 
 var (
-	APIErrorStates = map[string]bool{
-		"requestESIM":     false,
-		"newRegistration": false,
-	}
+	apiNames  = []string{"requestESIM", "newRegistration"}
+	ApiStates = make(map[string]string)
 
 	UserRequestESIM     *RequestESIMResponse
 	UserNewRegistration *NewRegistrationResponse
 )
 
-func IsAPIErrorState(apiName string) bool {
-	return APIErrorStates[apiName]
+func GetApiState(apiName string) string {
+	return ApiStates[apiName]
 }
 
-func HasCustomAPIResponse(apiName string) bool {
-	switch apiName {
-	case "requestESIM":
-		return UserRequestESIM != nil
-	case "newRegistration":
-		return UserNewRegistration != nil
-	default:
-		return false
-	}
-}
-
-func ToggleAPIErrorState(apiName string) {
-	if _, ok := APIErrorStates[apiName]; !ok {
+func ToggleApiState(apiName string, app *app.App) {
+	if _, ok := ApiStates[apiName]; !ok {
 		return
 	}
-	APIErrorStates[apiName] = !APIErrorStates[apiName]
+	ApiStates[apiName] = app.Helper.ToggleApiState(GetApiState(apiName))
 }
 
-func (p *phx) SetUserRequestESIM(jsonData json.RawMessage) error {
-	if jsonData == nil || string(jsonData) == "" {
-		UserRequestESIM = nil
-		return nil
+func InitApis(app *app.App) {
+	for _, apiName := range apiNames {
+		ApiStates[apiName] = "S"
 	}
-	response := RequestESIMResponse{}
-	err := json.Unmarshal(jsonData, &response)
+	results, err := app.CustomRespStore.GetMany(apiNames)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal: %w", err)
+		return
 	}
-	UserRequestESIM = &response
-	return nil
-}
-
-func (p *phx) SetUserNewRegistration(jsonData json.RawMessage) error {
-	if jsonData == nil || string(jsonData) == "" {
-		UserNewRegistration = nil
-		return nil
+	for _, res := range *results {
+		respBytes := []byte(res.Resp)
+		if len(respBytes) == 0 {
+			continue
+		}
+		switch res.Name {
+		case "requestESIM":
+			var r RequestESIMResponse
+			err := json.Unmarshal(respBytes, &r)
+			if err != nil {
+				break
+			}
+			UserRequestESIM = &r
+		case "newRegistration":
+			var r NewRegistrationResponse
+			err := json.Unmarshal(respBytes, &r)
+			if err != nil {
+				break
+			}
+			UserNewRegistration = &r
+		}
 	}
-	response := NewRegistrationResponse{}
-	err := json.Unmarshal(jsonData, &response)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal: %w", err)
-	}
-	UserNewRegistration = &response
-	return nil
 }

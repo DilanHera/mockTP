@@ -1,5 +1,7 @@
 package phx
 
+import "fmt"
+
 type NewRegistrationRequest struct {
 	KeyCorrelate       string           `json:"keyCorrelate" validate:"required"`
 	PublicIdType       string           `json:"publicIdType" validate:"required"`
@@ -40,11 +42,14 @@ type NewRegistrationResponse struct {
 }
 
 func (p *phx) NewRegistration(input *NewRegistrationRequest) (*NewRegistrationResponse, error) {
-	if UserNewRegistration != nil {
-		return UserNewRegistration, nil
+	if GetApiState("newRegistration") == "C" {
+		if UserNewRegistration != nil {
+			return UserNewRegistration, nil
+		}
+		return nil, fmt.Errorf("no custom response set for newRegistration")
 	}
 
-	if IsAPIErrorState("newRegistration") {
+	if GetApiState("newRegistration") == "E" {
 		return &NewRegistrationResponse{
 			ResultCode: "50000",
 			ResultDesc: "Failed: newRegistration (1)",
