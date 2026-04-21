@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
 )
@@ -18,51 +19,26 @@ func IndexOf[T comparable](arr []T, target T) int {
 }
 
 func (m *model) MarshalJSONForPlaceholder(name string) string {
-	result, err := m.app.CustomRespStore.Get(name)
+	result, err := m.app.AppInfoStore.Get(name)
 	if err != nil {
 		return ""
 	}
-	// jsonData, err := json.MarshalIndent(result, "", "  ")
-	// if err != nil {
-	// 	return ""
-	// }
-	// if len(jsonData) == 0 || string(jsonData) == "null" {
-	// 	return ""
-	// }
 	return result.Resp
+}
+
+func InitApiStates(app *app.App) {
+	result, err := app.AppInfoStore.GetAll()
+	if err != nil {
+		panic(err)
+	}
+	for _, r := range *result {
+		ApiStates[r.Name] = r.State
+	}
 }
 
 func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage) error {
 	if jsonData == nil || string(jsonData) == "" {
-		m.app.CustomRespStore.CreateOrUpdate(resourceName, "")
-		switch resourceName {
-		case "lockNumberByCriteriaPrepaid":
-			serviceprovisioning.UserLockNumberByCriteriaPrepaid = nil
-		case "lockNumberByCriteriaPostpaid":
-			serviceprovisioning.UserLockNumberByCriteriaPostpaid = nil
-		case "lockNumberByMobilePrepaid":
-			serviceprovisioning.UserLockNumberByMobilePrepaid = nil
-		case "lockNumberByMobilePostpaid":
-			serviceprovisioning.UserLockNumberByMobilePostpaid = nil
-		case "confirmPreparationPrepaid":
-			serviceprovisioning.UserConfirmPreparationPrepaid = nil
-		case "confirmPreparationPostpaid":
-			serviceprovisioning.UserConfirmPreparationPostpaid = nil
-		case "querySimInfo":
-			serviceprovisioning.UserQuerySimInfo = nil
-		case "requestPrepNoPrepaid":
-			serviceprovisioning.UserRequestPrepNoPrepaid = nil
-		case "requestPrepNoPostpaid":
-			serviceprovisioning.UserRequestPrepNoPostpaid = nil
-		case "clearNumberPreparationPrepaid":
-			serviceprovisioning.UserClearNumberPreparationPrepaid = nil
-		case "clearNumberPreparationPostpaid":
-			serviceprovisioning.UserClearNumberPreparationPostpaid = nil
-		case "requestESIM":
-			phx.UserRequestESIM = nil
-		case "newRegistration":
-			phx.UserNewRegistration = nil
-		}
+		m.app.AppInfoStore.UpdateResp(resourceName, "")
 		return nil
 	}
 	switch resourceName {
@@ -163,6 +139,11 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 	default:
 		return fmt.Errorf("unknown resource name: %s", resourceName)
 	}
-	m.app.CustomRespStore.CreateOrUpdate(resourceName, string(jsonData))
+	m.app.AppInfoStore.UpdateResp(resourceName, string(jsonData))
 	return nil
+}
+
+func ToggleApiState(resourceName string, app *app.App) {
+	ApiStates[resourceName] = app.Helper.ToggleApiState(ApiStates[resourceName])
+	app.AppInfoStore.UpdateState(resourceName, ApiStates[resourceName])
 }

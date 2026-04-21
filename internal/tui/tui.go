@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/DilanHera/mockTP/internal/app"
-	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
-	"github.com/DilanHera/mockTP/internal/services/phx"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
+
+var ApiStates = make(map[string]string)
 
 type screen int
 
@@ -54,6 +54,7 @@ func Run(app *app.App) error {
 		// Windows / ConPTY: read keys from the real console when stdin is piped or wrapped.
 		tea.WithInputTTY(),
 	)
+	InitApiStates(app)
 	_, err := p.Run()
 	return err
 }
@@ -219,23 +220,23 @@ func (m model) toggleErrorState() (model, tea.Cmd) {
 		if m.cursor < 0 || m.cursor >= len(ServiceProvisioningResources) {
 			return m, nil
 		}
-		serviceprovisioning.ToggleResourceState(ServiceProvisioningResources[m.cursor], m.app)
+		ToggleApiState(ServiceProvisioningResources[m.cursor], m.app)
 		return m, nil
 	case screenPHX:
 		if m.cursor < 0 || m.cursor >= len(PHXApis) {
 			return m, nil
 		}
-		phx.ToggleApiState(PHXApis[m.cursor], m.app)
+		ToggleApiState(PHXApis[m.cursor], m.app)
 		return m, nil
 	}
 	return m, nil
 }
 
 func serviceProvisioningStateIndicator(resource string) string {
-	if serviceprovisioning.GetResourceState(resource) == "C" {
+	if ApiStates[resource] == "C" {
 		return styleCustom.Render("C")
 	}
-	if serviceprovisioning.GetResourceState(resource) == "E" {
+	if ApiStates[resource] == "E" {
 		return styleErr.Render("E")
 	}
 	return styleOK.Render("S")
@@ -252,10 +253,10 @@ func serviceProvisioningLabelWidth() int {
 }
 
 func phxStateIndicator(api string) string {
-	if phx.GetApiState(api) == "C" {
+	if ApiStates[api] == "C" {
 		return styleCustom.Render("C")
 	}
-	if phx.GetApiState(api) == "E" {
+	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
 	}
 	return styleOK.Render("S")

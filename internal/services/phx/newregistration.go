@@ -42,14 +42,15 @@ type NewRegistrationResponse struct {
 }
 
 func (p *phx) NewRegistration(input *NewRegistrationRequest) (*NewRegistrationResponse, error) {
-	if GetApiState("newRegistration") == "C" {
+	result := p.GetApiInfo("newRegistration")
+	if result.State == "C" {
 		if UserNewRegistration != nil {
 			return UserNewRegistration, nil
 		}
 		return nil, fmt.Errorf("no custom response set for newRegistration")
 	}
 
-	if GetApiState("newRegistration") == "E" {
+	if result.State == "E" {
 		return &NewRegistrationResponse{
 			ResultCode: "50000",
 			ResultDesc: "Failed: newRegistration (1)",

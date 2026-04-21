@@ -20,7 +20,8 @@ type LockNumberByMobileResponse struct {
 }
 
 func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*LockNumberByMobileResponse, error) {
-	if GetResourceState(input.ResourceName) == "C" {
+	result := s.GetApiInfo(input.ResourceName)
+	if result.State == "C" {
 		if UserLockNumberByMobilePrepaid != nil && input.ResourceName == "lockNumberByMobilePrepaid" {
 			return UserLockNumberByMobilePrepaid, nil
 		}
@@ -30,7 +31,7 @@ func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileReques
 		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if GetResourceState(input.ResourceName) == "E" {
+	if result.State == "E" {
 		return &LockNumberByMobileResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

@@ -63,7 +63,8 @@ type ConfirmPrepResponseItem struct {
 }
 
 func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (ConfirmPreparationResponse, error) {
-	if GetResourceState(input.ResourceName) == "C" {
+	result := s.GetApiInfo(input.ResourceName)
+	if result.State == "C" {
 		if UserConfirmPreparationPrepaid != nil && input.ResourceName == "confirmPreparationPrepaid" {
 			return *UserConfirmPreparationPrepaid, nil
 		}
@@ -73,7 +74,7 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 		return ConfirmPreparationResponse{}, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 	response := &ConfirmPreparationResponse{}
-	if GetResourceState(input.ResourceName) == "E" {
+	if result.State == "E" {
 		response = &ConfirmPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ReTransmit:       "0",

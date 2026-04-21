@@ -34,7 +34,8 @@ type RequestPrepNoResponseItem struct {
 }
 
 func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*RequestPrepNoResponse, error) {
-	if GetResourceState(input.ResourceName) == "C" {
+	result := s.GetApiInfo(input.ResourceName)
+	if result.State == "C" {
 		if UserRequestPrepNoPrepaid != nil && input.ResourceName == "requestPrepNoPrepaid" {
 			return UserRequestPrepNoPrepaid, nil
 		}
@@ -44,7 +45,7 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if GetResourceState(input.ResourceName) == "E" {
+	if result.State == "E" {
 		return &RequestPrepNoResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

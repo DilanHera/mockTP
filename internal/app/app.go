@@ -6,8 +6,8 @@ import (
 )
 
 type App struct {
-	Helper          internal.Helper
-	CustomRespStore store.CustomResponseStore
+	Helper       internal.Helper
+	AppInfoStore store.ApiInfoStore
 }
 
 func NewApp() *App {
@@ -16,7 +16,7 @@ func NewApp() *App {
 		panic(err)
 	}
 	return &App{
-		Helper:          internal.NewHelper(),
-		CustomRespStore: *store.NewCustomResponseStore(db),
+		Helper:       internal.NewHelper(),
+		AppInfoStore: *store.NewApiInfoStore(db),
 	}
 }

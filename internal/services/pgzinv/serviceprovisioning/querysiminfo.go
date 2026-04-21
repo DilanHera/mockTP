@@ -44,14 +44,15 @@ type SimSerialNoListItem struct {
 }
 
 func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*QuerySimInfoResponse, error) {
-	if GetResourceState(input.ResourceName) == "C" {
+	result := s.GetApiInfo(input.ResourceName)
+	if result.State == "C" {
 		if UserQuerySimInfo != nil {
 			return UserQuerySimInfo, nil
 		}
 		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 	var response *QuerySimInfoResponse
-	if GetResourceState(input.ResourceName) == "E" {
+	if result.State == "E" {
 		response = &QuerySimInfoResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

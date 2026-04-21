@@ -23,7 +23,8 @@ type ClearNumberPreparationResponse struct {
 }
 
 func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*ClearNumberPreparationResponse, error) {
-	if GetResourceState(input.ResourceName) == "C" {
+	result := s.GetApiInfo(input.ResourceName)
+	if result.State == "C" {
 		if UserClearNumberPreparationPrepaid != nil && input.ResourceName == "clearNumberPreparationPrepaid" {
 			return UserClearNumberPreparationPrepaid, nil
 		}
@@ -33,7 +34,7 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
 	}
 
-	if GetResourceState(input.ResourceName) == "E" {
+	if result.State == "E" {
 		return &ClearNumberPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,

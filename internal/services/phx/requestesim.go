@@ -36,14 +36,15 @@ type NewSimItem struct {
 }
 
 func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, error) {
-	if GetApiState("requestESIM") == "C" {
+	result := p.GetApiInfo("requestESIM")
+	if result.State == "C" {
 		if UserRequestESIM != nil {
 			return UserRequestESIM, nil
 		}
 		return nil, fmt.Errorf("no custom response set for requestESIM")
 	}
 
-	if GetApiState("requestESIM") == "E" {
+	if result.State == "E" {
 		return &RequestESIMResponse{
 			ResultCode: "50000",
 			ResultDesc: "Failed: requestESIM (1)",
