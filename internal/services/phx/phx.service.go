@@ -8,11 +8,14 @@ import (
 )
 
 var (
-	apiNames = []string{"requestESIM", "newRegistration"}
+	apiNames = []string{"requestESIM", "newRegistration", "encryptLib", "checkPerso", "productProvisioning"}
 	// ApiStates = make(map[string]string)
 
-	UserRequestESIM     *RequestESIMResponse
-	UserNewRegistration *NewRegistrationResponse
+	UserRequestESIM         *RequestESIMResponse
+	UserNewRegistration     *NewRegistrationResponse
+	UserEncryptLib          *EncryptLibResponse
+	UserCheckPerso          *CheckPersoResponse
+	UserProductProvisioning *ProductProvisioningResponse
 )
 
 func (p *phx) GetApiInfo(apiName string) store.ApiInfo {
@@ -42,6 +45,27 @@ func CreateResponse(resp []byte, name string) {
 			break
 		}
 		UserNewRegistration = &r
+	case "encryptLib":
+		var r EncryptLibResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
+		UserEncryptLib = &r
+	case "checkPerso":
+		var r CheckPersoResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
+		UserCheckPerso = &r
+	case "productProvisioning":
+		var r ProductProvisioningResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
+		UserProductProvisioning = &r
 	}
 }
 

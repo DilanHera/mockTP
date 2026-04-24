@@ -2,11 +2,12 @@ package dt
 
 import (
 	"encoding/json"
+
 	"github.com/DilanHera/mockTP/internal/app"
 )
 
 type DT interface {
-	ListOrderNoByDono(input *ListOrderNoByDonoRequest) (*ListOrderNoByDonoResponse, error)
+	ListOrderNoByDono(input []string) (*ListOrderNoByDonoResponse, error)
 	PickingDocument(input *PickingDocumentRequest) (*PickingDocumentResponse, error)
 	QueryPrint(input *QueryPrintRequest) (*QueryPrintResponse, error)
 	QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryStockImeiMyStoreResponse, error)

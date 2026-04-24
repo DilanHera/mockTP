@@ -1,6 +1,15 @@
 package dt
 
+import "fmt"
+
 type ReprintReceiptFormRequest struct {
+	ReceiptNum    string `json:"receiptNum" validate:"required"`
+	ReportType    string `json:"reportType" validate:"required"`
+	UserId        string `json:"userId" validate:"required"`
+	Company       string `json:"company" validate:"required"`
+	PrintType     string `json:"printType" validate:"required"`
+	OmniNum       string `json:"omniNum" validate:"required"`
+	ReasonReprint string `json:"reasonReprint" validate:"required"`
 }
 
 type ReprintReceiptFormResponse struct {
@@ -11,9 +20,22 @@ type ReprintReceiptFormResponse struct {
 }
 
 func (d *dt) ReprintReceiptForm(input *ReprintReceiptFormRequest) (*ReprintReceiptFormResponse, error) {
-	if UserReprintReceiptForm != nil {
-		return UserReprintReceiptForm, nil
+	result := d.GetApiInfo("reprintReceiptForm")
+	if result.State == "C" {
+		if UserReprintReceiptForm != nil {
+			return UserReprintReceiptForm, nil
+		}
+		return nil, fmt.Errorf("no custom response set for reprintReceiptForm")
 	}
+
+	if result.State == "E" {
+		return &ReprintReceiptFormResponse{
+			ResultCode:        "50000",
+			ResultDescription: "Data Not Found.",
+			DeveloperMessage:  "Data Not Found.",
+		}, nil
+	}
+
 	response := &ReprintReceiptFormResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

@@ -7,6 +7,9 @@ import (
 type Phx interface {
 	RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, error)
 	NewRegistration(input *NewRegistrationRequest) (*NewRegistrationResponse, error)
+	EncryptLib(input *EncryptLibRequest) (*EncryptLibResponse, error)
+	CheckPerso(input *CheckPersoRequest) (*CheckPersoResponse, error)
+	ProductProvisioning(input *ProductProvisioningRequest) (*ProductProvisioningResponse, error)
 }
 
 type phx struct {

@@ -19,8 +19,10 @@ const (
 	screenPGZINV
 	screenServiceProvisioning
 	screenPHX
+	screenDT
 	screenServiceProvisioningMockJSON
 	screenPHXMockJSON
+	screenDTMockJSON
 )
 
 // clearSaveNoticeMsg dismisses the post-save confirmation after a short delay.
@@ -33,6 +35,7 @@ type model struct {
 	// Remember cursor when drilling down so Esc restores the parent list position.
 	savedRootCursor   int
 	savedPGZINVCursor int
+	savedDTCursor     int
 
 	width  int
 	height int
@@ -73,6 +76,8 @@ func (m *model) itemCount() int {
 		return len(ServiceProvisioningResources)
 	case screenPHX:
 		return len(PHXApis)
+	case screenDT:
+		return len(DTApis)
 	default:
 		return 0
 	}
@@ -88,6 +93,8 @@ func (m *model) labels() []string {
 		return ServiceProvisioningResources
 	case screenPHX:
 		return PHXApis
+	case screenDT:
+		return DTApis
 	default:
 		return nil
 	}
@@ -127,7 +134,7 @@ func (m *model) newPHXMockTextarea(apiName, value string) textarea.Model {
 }
 
 func isJSONMockScreen(s screen) bool {
-	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON
+	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON
 }
 
 func isJSONSubmit(msg tea.KeyMsg) bool {
@@ -228,6 +235,12 @@ func (m model) toggleErrorState() (model, tea.Cmd) {
 		}
 		ToggleApiState(PHXApis[m.cursor], m.app)
 		return m, nil
+	case screenDT:
+		if m.cursor < 0 || m.cursor >= len(DTApis) {
+			return m, nil
+		}
+		ToggleApiState(DTApis[m.cursor], m.app)
+		return m, nil
 	}
 	return m, nil
 }
@@ -272,6 +285,41 @@ func phxLabelWidth() int {
 	return width
 }
 
+func dtStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func dtLabelWidth() int {
+	width := 0
+	for _, api := range DTApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
+func (m *model) newDTMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
 func (m *model) enter() (*model, tea.Cmd) {
 	switch m.screen {
 	case screenRoot:
@@ -283,6 +331,10 @@ func (m *model) enter() (*model, tea.Cmd) {
 		case IndexOf(Services, "PHX"):
 			m.savedRootCursor = m.cursor
 			m.screen = screenPHX
+			m.cursor = 0
+		case IndexOf(Services, "DT"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenDT
 			m.cursor = 0
 		}
 	case screenPGZINV:
@@ -319,6 +371,20 @@ func (m *model) enter() (*model, tea.Cmd) {
 		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
+	case screenDT:
+		if m.cursor < 0 || m.cursor >= len(DTApis) {
+			return m, nil
+		}
+		name := DTApis[m.cursor]
+		m.screen = screenDTMockJSON
+		m.jsonMockParent = screenDT
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.ta = m.newDTMockTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
 	}
 	return m, nil
 }
@@ -337,6 +403,8 @@ func (m *model) submitMockJSON() (tea.Model, tea.Cmd) {
 		return m.submitServiceProvisioningMockJSON()
 	case screenPHXMockJSON:
 		return m.submitPHXMockJSON()
+	case screenDTMockJSON:
+		return m.submitDTMockJSON()
 	default:
 		return m, nil
 	}
@@ -382,9 +450,29 @@ func (m *model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
+func (m *model) submitDTMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	var err error
+	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenDTMockJSON
+		m.ta = m.newDTMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
+	}
+	m.screen = screenDT
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
 func (m *model) goBack() *model {
 	switch m.screen {
-	case screenServiceProvisioningMockJSON, screenPHXMockJSON:
+	case screenServiceProvisioningMockJSON, screenPHXMockJSON, screenDTMockJSON:
 		return m.leaveJSONEditor()
 	case screenServiceProvisioning:
 		m.screen = screenPGZINV
@@ -393,6 +481,9 @@ func (m *model) goBack() *model {
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
 	case screenPHX:
+		m.screen = screenRoot
+		m.cursor = m.savedRootCursor
+	case screenDT:
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
 	}
@@ -409,10 +500,14 @@ func (m *model) breadcrumb() string {
 		return "PGZINV > ServiceProvisioning"
 	case screenPHX:
 		return "PHX"
+	case screenDT:
+		return "DT"
 	case screenServiceProvisioningMockJSON:
 		return "PGZINV > ServiceProvisioning > " + m.jsonMockResource + " [JSON]"
 	case screenPHXMockJSON:
 		return "PHX > " + m.jsonMockResource + " [JSON]"
+	case screenDTMockJSON:
+		return "DT > " + m.jsonMockResource + " [JSON]"
 	default:
 		return "mockTP"
 	}
@@ -439,7 +534,7 @@ func (m *model) View() string {
 
 	var b strings.Builder
 	b.WriteString(styleTitle.Render(m.breadcrumb()))
-	if (m.screen == screenServiceProvisioning || m.screen == screenPHX) && m.saveNotice != "" {
+	if (m.screen == screenServiceProvisioning || m.screen == screenPHX || m.screen == screenDT) && m.saveNotice != "" {
 		b.WriteString("\n\n")
 		b.WriteString(styleOK.Render(m.saveNotice))
 	}
@@ -461,6 +556,13 @@ func (m *model) View() string {
 			}
 			displayLabel = label + strings.Repeat(" ", padding+1) + phxStateIndicator(label)
 		}
+		if m.screen == screenDT {
+			padding := dtLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + dtStateIndicator(label)
+		}
 
 		line := "  " + displayLabel
 		if i == m.cursor {
@@ -481,6 +583,12 @@ func (m *model) View() string {
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
 	case screenPHX:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+	case screenDT:
 		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))

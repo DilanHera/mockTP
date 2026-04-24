@@ -1,11 +1,13 @@
 package dt
 
+import "fmt"
+
 type QueryPrintRequest struct {
-	ReceiptNum string `json:"receiptNum"`
-	Company    string `json:"company"`
-	UserId     string `json:"userId"`
-	ReprintFlg string `json:"reprintFlg"`
-	ReportType string `json:"reportType"`
+	ReceiptNum string `json:"receiptNum" validate:"required"`
+	Company    string `json:"company" validate:"required"`
+	UserId     string `json:"userId" validate:"required"`
+	ReprintFlg string `json:"reprintFlg" validate:"required"`
+	ReportType string `json:"reportType" validate:"required"`
 }
 
 type QueryPrintResponse struct {
@@ -125,11 +127,25 @@ type DataList struct {
 }
 
 func (d *dt) QueryPrint(input *QueryPrintRequest) (*QueryPrintResponse, error) {
-	if UserQueryPrint != nil {
-		return UserQueryPrint, nil
+	result := d.GetApiInfo("queryPrint")
+	if result.State == "C" {
+		if UserQueryPrint != nil {
+			return UserQueryPrint, nil
+		}
+		return nil, fmt.Errorf("no custom response set for queryPrint")
 	}
+
+	if result.State == "E" {
+		return &QueryPrintResponse{
+			ResultCode:        "50000",
+			ResultDescription: "Data incorrect",
+			DeveloperMessage:  "Data incorrect",
+			DataList:          []DataList{},
+		}, nil
+	}
+
 	response := &QueryPrintResponse{
-		ResultCode:        "200",
+		ResultCode:        "20000",
 		ResultDescription: "Success",
 		DeveloperMessage:  "Success",
 		DataList: []DataList{

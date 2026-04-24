@@ -1,8 +1,10 @@
 package dt
 
+import "fmt"
+
 type AuthenticateRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type AuthenticateResponse struct {
@@ -12,9 +14,22 @@ type AuthenticateResponse struct {
 }
 
 func (d *dt) Authenticate(input *AuthenticateRequest) (*AuthenticateResponse, error) {
-	if UserAuthenticate != nil {
-		return UserAuthenticate, nil
+	result := d.GetApiInfo("authenticate")
+	if result.State == "C" {
+		if UserAuthenticate != nil {
+			return UserAuthenticate, nil
+		}
+		return nil, fmt.Errorf("no custom response set for authenticate")
 	}
+
+	if result.State == "E" {
+		return &AuthenticateResponse{
+			StatusCode: "500",
+			Message:    "authentication failed",
+			Token:      "",
+		}, nil
+	}
+
 	return &AuthenticateResponse{
 		StatusCode: "200",
 		Message:    "success authenticate",

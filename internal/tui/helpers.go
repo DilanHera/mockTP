@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/DilanHera/mockTP/internal/app"
+	"github.com/DilanHera/mockTP/internal/services/dt"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
 )
@@ -136,6 +137,76 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 			return fmt.Errorf("failed to unmarshal: %w", err)
 		}
 		phx.UserNewRegistration = &r
+	case "encryptLib":
+		var r phx.EncryptLibResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		phx.UserEncryptLib = &r
+	case "checkPerso":
+		var r phx.CheckPersoResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		phx.UserCheckPerso = &r
+	case "productProvisioning":
+		var r phx.ProductProvisioningResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		phx.UserProductProvisioning = &r
+	case "listOrderNoByDono":
+		var r dt.ListOrderNoByDonoResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserListOrderNoByDono = &r
+	case "pickingDocument":
+		var r dt.PickingDocumentResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserPickingDocument = &r
+	case "queryPrint":
+		var r dt.QueryPrintResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserQueryPrint = &r
+	case "queryStockImeiMyStore":
+		var r dt.QueryStockImeiMyStoreResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserQueryStockImeiMyStore = &r
+	case "reprintReceiptForm":
+		var r dt.ReprintReceiptFormResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserReprintReceiptForm = &r
+	case "updateSimSerialPerso":
+		var r dt.UpdateSimSerialPersoResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserUpdateSimSerialPerso = &r
+	case "authenticate":
+		var r dt.AuthenticateResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		dt.UserAuthenticate = &r
 	default:
 		return fmt.Errorf("unknown resource name: %s", resourceName)
 	}

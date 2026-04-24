@@ -3,19 +3,19 @@ package phx
 import "fmt"
 
 type RequestESIMRequest struct {
-	Msisdn        string `json:"msisdn"`
-	ESimProject   string `json:"eSimProject"`
-	SourceSystem  string `json:"sourceSystem"`
-	UserName      string `json:"userName"`
-	LocationCode  string `json:"locationCode"`
-	SecureKey     string `json:"secureKey"`
-	ChargeType    string `json:"chargeType"`
-	BillingSystem string `json:"billingSystem"`
-	SimService    string `json:"simService"`
-	SimType       string `json:"simType"`
-	PersoFlag     string `json:"persoFlag"`
-	ReferenceId   string `json:"referenceId"`
-	Channel       string `json:"channel"`
+	Msisdn        string `json:"msisdn" validate:"required"`
+	ESimProject   string `json:"eSimProject" validate:"required"`
+	SourceSystem  string `json:"sourceSystem" validate:"required"`
+	UserName      string `json:"userName" validate:"required"`
+	LocationCode  string `json:"locationCode" validate:"required"`
+	SecureKey     string `json:"secureKey" validate:"required"`
+	ChargeType    string `json:"chargeType" validate:"required"`
+	BillingSystem string `json:"billingSystem" validate:"required"`
+	SimService    string `json:"simService" validate:"required"`
+	SimType       string `json:"simType" validate:"required"`
+	PersoFlag     string `json:"persoFlag" validate:"required"`
+	ReferenceId   string `json:"referenceId" validate:"omitempty"`
+	Channel       string `json:"channel" validate:"required"`
 }
 
 type RequestESIMResponse struct {

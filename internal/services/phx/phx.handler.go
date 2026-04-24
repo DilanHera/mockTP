@@ -51,3 +51,51 @@ func (h *phxHandler) NewRegistrationHandler(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *phxHandler) EncryptLibHandler(w http.ResponseWriter, r *http.Request) {
+	request := &EncryptLibRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := h.phx.EncryptLib(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *phxHandler) CheckPersoHandler(w http.ResponseWriter, r *http.Request) {
+	request := &CheckPersoRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := h.phx.CheckPerso(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *phxHandler) ProductProvisioningHandler(w http.ResponseWriter, r *http.Request) {
+	request := &ProductProvisioningRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	response, err := h.phx.ProductProvisioning(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(response)
+}

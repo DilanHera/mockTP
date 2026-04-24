@@ -7,7 +7,6 @@ import (
 	"github.com/DilanHera/mockTP/internal/app"
 )
 
-
 type DTHandler struct {
 	app *app.App
 	dt  DT
@@ -22,13 +21,12 @@ func NewDTHandler(app *app.App) *DTHandler {
 }
 
 func (h *DTHandler) ListOrderNoByDonoHandler(w http.ResponseWriter, r *http.Request) {
-	request := &ListOrderNoByDonoRequest{}
-	err := json.NewDecoder(r.Body).Decode(request)
+	err := json.NewDecoder(r.Body).Decode(&ListOrderNoByDonoRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	response, err := h.dt.ListOrderNoByDono(request)
+	response, err := h.dt.ListOrderNoByDono(ListOrderNoByDonoRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -18,4 +18,6 @@ var ServiceProvisioningResources = []string{
 	"confirmPreparationPostpaid",
 }
 
-var PHXApis = []string{"requestESIM", "newRegistration"}
+var PHXApis = []string{"requestESIM", "newRegistration", "encryptLib", "checkPerso", "productProvisioning"}
+
+var DTApis = []string{"listOrderNoByDono", "pickingDocument", "queryPrint", "queryStockImeiMyStore", "reprintReceiptForm", "updateSimSerialPerso", "authenticate"}

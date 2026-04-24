@@ -1,9 +1,11 @@
 package dt
 
+import "fmt"
+
 type QueryStockImeiMyStoreRequest struct {
-	LocationCode string `json:"locationCode"`
-	SubStock     string `json:"subStock"`
-	ListSerialNo string `json:"listSerialNo"`
+	LocationCode string `json:"locationCode" validate:"required"`
+	SubStock     string `json:"subStock" validate:"required"`
+	ListSerialNo string `json:"listSerialNo" validate:"required"`
 }
 
 type QueryStockImeiMyStoreResponse struct {
@@ -30,9 +32,23 @@ type ListProduct struct {
 }
 
 func (d *dt) QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryStockImeiMyStoreResponse, error) {
-	if UserQueryStockImeiMyStore != nil {
-		return UserQueryStockImeiMyStore, nil
+	result := d.GetApiInfo("queryStockImeiMyStore")
+	if result.State == "C" {
+		if UserQueryStockImeiMyStore != nil {
+			return UserQueryStockImeiMyStore, nil
+		}
+		return nil, fmt.Errorf("no custom response set for queryStockImeiMyStore")
 	}
+
+	if result.State == "E" {
+		return &QueryStockImeiMyStoreResponse{
+			ResultCode:        "50000",
+			ResultDescription: "Product not found",
+			DeveloperMessage:  "Product not found",
+			ListProduct:       []ListProduct{},
+		}, nil
+	}
+
 	response := &QueryStockImeiMyStoreResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

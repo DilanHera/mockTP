@@ -9,6 +9,7 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/router"
+	"github.com/DilanHera/mockTP/internal/services/dt"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
 	"github.com/DilanHera/mockTP/internal/tui"
@@ -63,6 +64,7 @@ func runServer() {
 
 	serviceprovisioning.InitServiceProvisioningStore(app)
 	phx.InitPhxStore(app)
+	dt.InitDTStore(app)
 
 	r := router.SetupRouter(app)
 
