@@ -20,9 +20,13 @@ const (
 	screenServiceProvisioning
 	screenPHX
 	screenDT
+	screenIM
+	screenESB
 	screenServiceProvisioningMockJSON
 	screenPHXMockJSON
 	screenDTMockJSON
+	screenIMMockJSON
+	screenESBMockJSON
 )
 
 // clearSaveNoticeMsg dismisses the post-save confirmation after a short delay.
@@ -36,6 +40,8 @@ type model struct {
 	savedRootCursor   int
 	savedPGZINVCursor int
 	savedDTCursor     int
+	savedIMCursor     int
+	savedESBCursor    int
 
 	width  int
 	height int
@@ -78,6 +84,10 @@ func (m *model) itemCount() int {
 		return len(PHXApis)
 	case screenDT:
 		return len(DTApis)
+	case screenIM:
+		return len(IMApis)
+	case screenESB:
+		return len(ESBApis)
 	default:
 		return 0
 	}
@@ -95,6 +105,10 @@ func (m *model) labels() []string {
 		return PHXApis
 	case screenDT:
 		return DTApis
+	case screenIM:
+		return IMApis
+	case screenESB:
+		return ESBApis
 	default:
 		return nil
 	}
@@ -134,7 +148,7 @@ func (m *model) newPHXMockTextarea(apiName, value string) textarea.Model {
 }
 
 func isJSONMockScreen(s screen) bool {
-	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON
+	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON || s == screenIMMockJSON || s == screenESBMockJSON
 }
 
 func isJSONSubmit(msg tea.KeyMsg) bool {
@@ -241,6 +255,18 @@ func (m model) toggleErrorState() (model, tea.Cmd) {
 		}
 		ToggleApiState(DTApis[m.cursor], m.app)
 		return m, nil
+	case screenIM:
+		if m.cursor < 0 || m.cursor >= len(IMApis) {
+			return m, nil
+		}
+		ToggleApiState(IMApis[m.cursor], m.app)
+		return m, nil
+	case screenESB:
+		if m.cursor < 0 || m.cursor >= len(ESBApis) {
+			return m, nil
+		}
+		ToggleApiState(ESBApis[m.cursor], m.app)
+		return m, nil
 	}
 	return m, nil
 }
@@ -305,7 +331,77 @@ func dtLabelWidth() int {
 	return width
 }
 
+func imStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func imLabelWidth() int {
+	width := 0
+	for _, api := range IMApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
+func esbStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func esbLabelWidth() int {
+	width := 0
+	for _, api := range ESBApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
 func (m *model) newDTMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func (m *model) newIMMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func (m *model) newESBMockTextarea(apiName, value string) textarea.Model {
 	t := textarea.New()
 	t.ShowLineNumbers = false
 	t.Prompt = ""
@@ -335,6 +431,14 @@ func (m *model) enter() (*model, tea.Cmd) {
 		case IndexOf(Services, "DT"):
 			m.savedRootCursor = m.cursor
 			m.screen = screenDT
+			m.cursor = 0
+		case IndexOf(Services, "IM"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenIM
+			m.cursor = 0
+		case IndexOf(Services, "ESB"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenESB
 			m.cursor = 0
 		}
 	case screenPGZINV:
@@ -385,6 +489,34 @@ func (m *model) enter() (*model, tea.Cmd) {
 		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
+	case screenIM:
+		if m.cursor < 0 || m.cursor >= len(IMApis) {
+			return m, nil
+		}
+		name := IMApis[m.cursor]
+		m.screen = screenIMMockJSON
+		m.jsonMockParent = screenIM
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.ta = m.newIMMockTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
+	case screenESB:
+		if m.cursor < 0 || m.cursor >= len(ESBApis) {
+			return m, nil
+		}
+		name := ESBApis[m.cursor]
+		m.screen = screenESBMockJSON
+		m.jsonMockParent = screenESB
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.ta = m.newESBMockTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
 	}
 	return m, nil
 }
@@ -405,6 +537,10 @@ func (m *model) submitMockJSON() (tea.Model, tea.Cmd) {
 		return m.submitPHXMockJSON()
 	case screenDTMockJSON:
 		return m.submitDTMockJSON()
+	case screenIMMockJSON:
+		return m.submitIMMockJSON()
+	case screenESBMockJSON:
+		return m.submitESBMockJSON()
 	default:
 		return m, nil
 	}
@@ -470,9 +606,49 @@ func (m *model) submitDTMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
+func (m *model) submitIMMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	var err error
+	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenIMMockJSON
+		m.ta = m.newIMMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
+	}
+	m.screen = screenIM
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
+func (m *model) submitESBMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	var err error
+	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenESBMockJSON
+		m.ta = m.newESBMockTextarea(m.jsonMockResource, m.ta.Value())
+		layoutJSONEditor(m)
+		cmd := m.ta.Focus()
+		return m, cmd
+	}
+	m.screen = screenESB
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
 func (m *model) goBack() *model {
 	switch m.screen {
-	case screenServiceProvisioningMockJSON, screenPHXMockJSON, screenDTMockJSON:
+	case screenServiceProvisioningMockJSON, screenPHXMockJSON, screenDTMockJSON, screenIMMockJSON, screenESBMockJSON:
 		return m.leaveJSONEditor()
 	case screenServiceProvisioning:
 		m.screen = screenPGZINV
@@ -484,6 +660,12 @@ func (m *model) goBack() *model {
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
 	case screenDT:
+		m.screen = screenRoot
+		m.cursor = m.savedRootCursor
+	case screenIM:
+		m.screen = screenRoot
+		m.cursor = m.savedRootCursor
+	case screenESB:
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
 	}
@@ -502,12 +684,20 @@ func (m *model) breadcrumb() string {
 		return "PHX"
 	case screenDT:
 		return "DT"
+	case screenIM:
+		return "IM"
+	case screenESB:
+		return "ESB"
 	case screenServiceProvisioningMockJSON:
 		return "PGZINV > ServiceProvisioning > " + m.jsonMockResource + " [JSON]"
 	case screenPHXMockJSON:
 		return "PHX > " + m.jsonMockResource + " [JSON]"
 	case screenDTMockJSON:
 		return "DT > " + m.jsonMockResource + " [JSON]"
+	case screenIMMockJSON:
+		return "IM > " + m.jsonMockResource + " [JSON]"
+	case screenESBMockJSON:
+		return "ESB > " + m.jsonMockResource + " [JSON]"
 	default:
 		return "mockTP"
 	}
@@ -534,7 +724,7 @@ func (m *model) View() string {
 
 	var b strings.Builder
 	b.WriteString(styleTitle.Render(m.breadcrumb()))
-	if (m.screen == screenServiceProvisioning || m.screen == screenPHX || m.screen == screenDT) && m.saveNotice != "" {
+	if (m.screen == screenServiceProvisioning || m.screen == screenPHX || m.screen == screenDT || m.screen == screenIM || m.screen == screenESB) && m.saveNotice != "" {
 		b.WriteString("\n\n")
 		b.WriteString(styleOK.Render(m.saveNotice))
 	}
@@ -563,6 +753,20 @@ func (m *model) View() string {
 			}
 			displayLabel = label + strings.Repeat(" ", padding+1) + dtStateIndicator(label)
 		}
+		if m.screen == screenIM {
+			padding := imLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + imStateIndicator(label)
+		}
+		if m.screen == screenESB {
+			padding := esbLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + esbStateIndicator(label)
+		}
 
 		line := "  " + displayLabel
 		if i == m.cursor {
@@ -589,6 +793,18 @@ func (m *model) View() string {
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
 	case screenDT:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+	case screenIM:
+		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString("\n")
+		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+	case screenESB:
 		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))

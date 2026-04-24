@@ -3,9 +3,45 @@ package im
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/DilanHera/mockTP/internal/app"
+	"github.com/DilanHera/mockTP/internal/store"
 )
 
-var UserSendSimSerialNo *SendSimSerialNoResponse
+var (
+	apiNames = []string{"sendSimSerialNo"}
+
+	UserSendSimSerialNo *SendSimSerialNoResponse
+)
+
+func (i *im) GetApiInfo(apiName string) store.ApiInfo {
+	res, err := i.app.AppInfoStore.Get(apiName)
+	if err != nil {
+		return store.ApiInfo{}
+	}
+	if res.Resp != "" {
+		CreateResponse([]byte(res.Resp), apiName)
+	}
+	return *res
+}
+
+func CreateResponse(resp []byte, name string) {
+	switch name {
+	case "sendSimSerialNo":
+		var r SendSimSerialNoResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
+		UserSendSimSerialNo = &r
+	}
+}
+
+func InitIMStore(app *app.App) {
+	for _, apiName := range apiNames {
+		app.AppInfoStore.Create(apiName, "", "S")
+	}
+}
 
 func (i *im) SetUserSendSimSerialNo(jsonData json.RawMessage) error {
 	if jsonData == nil || string(jsonData) == "" {

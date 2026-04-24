@@ -10,6 +10,8 @@ import (
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/router"
 	"github.com/DilanHera/mockTP/internal/services/dt"
+	"github.com/DilanHera/mockTP/internal/services/esb"
+	"github.com/DilanHera/mockTP/internal/services/im"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
 	"github.com/DilanHera/mockTP/internal/tui"
@@ -65,6 +67,8 @@ func runServer() {
 	serviceprovisioning.InitServiceProvisioningStore(app)
 	phx.InitPhxStore(app)
 	dt.InitDTStore(app)
+	im.InitIMStore(app)
+	esb.InitESBStore(app)
 
 	r := router.SetupRouter(app)
 
@@ -78,8 +82,12 @@ func runServer() {
 func runTUI() {
 	app := app.NewApp()
 
-	// serviceprovisioning.InitResources(app)
-	// phx.InitApis(app)
+	// Seed API entries for the TUI so state/mock JSON persists even without running the server mode first.
+	serviceprovisioning.InitServiceProvisioningStore(app)
+	phx.InitPhxStore(app)
+	dt.InitDTStore(app)
+	im.InitIMStore(app)
+	esb.InitESBStore(app)
 
 	if err := tui.Run(app); err != nil {
 		fmt.Fprintln(os.Stderr, "TUI error:", err)

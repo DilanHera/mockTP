@@ -6,6 +6,8 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/dt"
+	"github.com/DilanHera/mockTP/internal/services/esb"
+	"github.com/DilanHera/mockTP/internal/services/im"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
 )
@@ -207,6 +209,31 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 			return fmt.Errorf("failed to unmarshal: %w", err)
 		}
 		dt.UserAuthenticate = &r
+	case "sendSimSerialNo":
+		var r im.SendSimSerialNoResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+		im.UserSendSimSerialNo = &r
+	case "oauthToken":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserOauthToken = &r
+	case "createFreightOrder":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserCreateFreightOrder = &r
+	case "doCreation":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserDOCreation = &r
+	case "legoUpdateOrderStatus":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserLegoupdateOrderStatus = &r
+	case "persoSim":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserPersosim = &r
+	case "serialNumberExpirationDate":
+		r := json.RawMessage(append([]byte(nil), jsonData...))
+		esb.UserSerialNumberExpirationDate = &r
 	default:
 		return fmt.Errorf("unknown resource name: %s", resourceName)
 	}

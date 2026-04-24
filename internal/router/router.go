@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/dt"
+	"github.com/DilanHera/mockTP/internal/services/esb"
 	"github.com/DilanHera/mockTP/internal/services/im"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv"
 	"github.com/DilanHera/mockTP/internal/services/phx"
@@ -15,6 +16,7 @@ func SetupRouter(app *app.App) chi.Router {
 	phxHandler := phx.NewPhxHandler(app)
 	dtHandler := dt.NewDTHandler(app)
 	imHandler := im.NewIMHandler(app)
+	esbHandler := esb.NewESBHandler(app)
 	router := chi.NewRouter()
 
 	router.Post("/api/v2/PGZInventory/synchronous/ServiceProvisioning", pgzinvHandler.ServiceProvisioningHandler)
@@ -41,5 +43,12 @@ func SetupRouter(app *app.App) chi.Router {
 	router.Post("/order/sendGoodsReceive", dtHandler.ListOrderNoByDonoHandler)
 
 	router.Post("/prweb/PRRestService/AISNIMWorkRequestDelivery/Services/SendSimSerialNo", imHandler.SendSimSerialNoHandler)
+
+	router.Post("/auth/v3.2/oauth/token", esbHandler.OauthTokenHandler)
+	router.Post("/sap-px/v1/FreightOrder/0170/CreateFreightOrder", esbHandler.CreateFreightOrderHandler)
+	router.Post("/sap-px/v1/DeliveryOrder/0145/DOCreation", esbHandler.DOCreationHandler)
+	router.Post("/lego-be-updateorderstatus/action/updateOrderStatus", esbHandler.LegoupdateOrderStatusHandler)
+	router.Post("/gomo-px/api/warehouse/sim/persosim", esbHandler.PersosimHandler)
+	router.Post("/sap-px/v1/BatchMaster/0025/SerialNumberExpirationDate", esbHandler.SerialNumberExpirationDateHandler)
 	return router
 }
