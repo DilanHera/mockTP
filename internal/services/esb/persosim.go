@@ -3,11 +3,19 @@ package esb
 import "fmt"
 
 type PersosimRequest struct {
+	TransactionID string `json:"transactionId" validate:"required"`
+	OrderNo       string `json:"orderNo" validate:"required"`
+	MobileNo      string `json:"mobileNo" validate:"required"`
+	TrackingNo    string `json:"trackingNo" validate:"required"`
+	SerialNo      string `json:"serialNo" validate:"required"`
+	Imsi          string `json:"imsi" validate:"required"`
+	Channel       string `json:"channel" validate:"required"`
+	ResultCode    string `json:"resultCode" validate:"required"`
 }
 
 type PersosimResponse struct {
-	ResultCode string `json:"resultCode"`
-	ResultDesc string `json:"resultDesc"`
+	StatusCode        string `json:"statusCode"`
+	StatusDescription string `json:"statusDescription"`
 }
 
 func (e *esb) Persosim(input *PersosimRequest) (*PersosimResponse, error) {
@@ -20,13 +28,13 @@ func (e *esb) Persosim(input *PersosimRequest) (*PersosimResponse, error) {
 	}
 	if result.State == "E" {
 		return &PersosimResponse{
-			ResultCode: "500",
-			ResultDesc: "Failed: persoSim (1)",
+			StatusCode:        "500",
+			StatusDescription: "Failed: persoSim (1)",
 		}, nil
 	}
 
 	return &PersosimResponse{
-		ResultCode: "200",
-		ResultDesc: "Success",
+		StatusCode:        "200",
+		StatusDescription: "Success",
 	}, nil
 }

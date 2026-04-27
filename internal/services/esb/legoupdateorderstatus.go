@@ -3,11 +3,27 @@ package esb
 import "fmt"
 
 type LegoupdateOrderStatusRequest struct {
+	ReferWebSessionID string                         `json:"referWebSessionID" validate:"required"`
+	ReferChannel      string                         `json:"referChannel" validate:"required"`
+	ReferChannelIP    string                         `json:"referChannelIP" validate:"required"`
+	TransactionID     string                         `json:"transactionID" validate:"required"`
+	OrderNo           string                         `json:"orderNo" validate:"required"`
+	StatusOrder       string                         `json:"statusOrder" validate:"required"`
+	SimCard           []LegoupdateOrderStatusSimCard `json:"simCard" validate:"required"`
+}
+
+type LegoupdateOrderStatusSimCard struct {
+	SimMobileNo string `json:"simMobileNo" validate:"required"`
+	SimSerial   string `json:"simSerial" validate:"required"`
 }
 
 type LegoupdateOrderStatusResponse struct {
-	ResultCode string `json:"resultCode"`
-	ResultDesc string `json:"resultDesc"`
+	TransactionID string `json:"transactionID" validate:"required"`
+	ResultCode    string `json:"resultCode" validate:"required"`
+	ResultMessage string `json:"resultMessage" validate:"required"`
+	Result        string `json:"result" validate:"required"`
+	StatusOrder   string `json:"statusOrder" validate:"required"`
+	OrderNo       string `json:"orderNo" validate:"required"`
 }
 
 func (e *esb) LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*LegoupdateOrderStatusResponse, error) {
@@ -20,13 +36,18 @@ func (e *esb) LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*Legou
 	}
 	if result.State == "E" {
 		return &LegoupdateOrderStatusResponse{
-			ResultCode: "500",
-			ResultDesc: "Failed: legoUpdateOrderStatus (1)",
+			TransactionID: "2ad5135a-8cb6-482a-9f48-610ef68cc435",
+			ResultCode:    "50000",
+			ResultMessage: "Failed: legoUpdateOrderStatus (1)",
 		}, nil
 	}
 
 	return &LegoupdateOrderStatusResponse{
-		ResultCode: "200",
-		ResultDesc: "Success",
+		TransactionID: "2ad5135a-8cb6-482a-9f48-610ef68cc435",
+		ResultCode:    "20000",
+		ResultMessage: "Success.",
+		Result:        "{}",
+		StatusOrder:   "03",
+		OrderNo:       "AS2604261179348",
 	}, nil
 }
