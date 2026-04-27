@@ -17,12 +17,12 @@ var (
 		"serialNumberExpirationDate",
 	}
 
-	UserOauthToken                 *json.RawMessage
-	UserCreateFreightOrder         *json.RawMessage
-	UserDOCreation                 *json.RawMessage
-	UserLegoupdateOrderStatus      *json.RawMessage
-	UserPersosim                   *json.RawMessage
-	UserSerialNumberExpirationDate *json.RawMessage
+	UserOauthToken                 *OauthTokenResponse
+	UserCreateFreightOrder         *CreateFreightOrderResponse
+	UserDOCreation                 *DOCreationResponse
+	UserLegoupdateOrderStatus      *LegoupdateOrderStatusResponse
+	UserPersosim                   *PersosimResponse
+	UserSerialNumberExpirationDate *SerialNumberExpirationDateResponse
 )
 
 func (e *esb) GetApiInfo(apiName string) store.ApiInfo {
@@ -37,30 +37,48 @@ func (e *esb) GetApiInfo(apiName string) store.ApiInfo {
 }
 
 func CreateResponse(resp []byte, name string) {
-	copyBytes := func(b []byte) json.RawMessage {
-		dst := make([]byte, len(b))
-		copy(dst, b)
-		return json.RawMessage(dst)
-	}
-
 	switch name {
 	case "oauthToken":
-		r := copyBytes(resp)
+		var r OauthTokenResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserOauthToken = &r
 	case "createFreightOrder":
-		r := copyBytes(resp)
+		var r CreateFreightOrderResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserCreateFreightOrder = &r
 	case "doCreation":
-		r := copyBytes(resp)
+		var r DOCreationResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserDOCreation = &r
 	case "legoUpdateOrderStatus":
-		r := copyBytes(resp)
+		var r LegoupdateOrderStatusResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserLegoupdateOrderStatus = &r
 	case "persoSim":
-		r := copyBytes(resp)
+		var r PersosimResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserPersosim = &r
 	case "serialNumberExpirationDate":
-		r := copyBytes(resp)
+		var r SerialNumberExpirationDateResponse
+		err := json.Unmarshal(resp, &r)
+		if err != nil {
+			break
+		}
 		UserSerialNumberExpirationDate = &r
 	}
 }
@@ -70,4 +88,3 @@ func InitESBStore(app *app.App) {
 		app.AppInfoStore.Create(apiName, "", "S")
 	}
 }
-

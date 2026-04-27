@@ -1,18 +1,16 @@
 package esb
 
 import (
-	"encoding/json"
-
 	"github.com/DilanHera/mockTP/internal/app"
 )
 
 type ESB interface {
-	OauthToken(input *json.RawMessage) (json.RawMessage, error)
-	CreateFreightOrder(input *json.RawMessage) (json.RawMessage, error)
-	DOCreation(input *json.RawMessage) (json.RawMessage, error)
-	LegoupdateOrderStatus(input *json.RawMessage) (json.RawMessage, error)
-	Persosim(input *json.RawMessage) (json.RawMessage, error)
-	SerialNumberExpirationDate(input *json.RawMessage) (json.RawMessage, error)
+	OauthToken(input *OauthTokenRequest) (*OauthTokenResponse, error)
+	CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreightOrderResponse, error)
+	DOCreation(input *DOCreationRequest) (*DOCreationResponse, error)
+	LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*LegoupdateOrderStatusResponse, error)
+	Persosim(input *PersosimRequest) (*PersosimResponse, error)
+	SerialNumberExpirationDate(input *SerialNumberExpirationDateRequest) (*SerialNumberExpirationDateResponse, error)
 }
 
 type esb struct {
@@ -22,4 +20,3 @@ type esb struct {
 func NewESB(app *app.App) ESB {
 	return &esb{app: app}
 }
-

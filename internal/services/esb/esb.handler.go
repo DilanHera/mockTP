@@ -21,92 +21,97 @@ func NewESBHandler(app *app.App) *ESBHandler {
 }
 
 func (h *ESBHandler) OauthTokenHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &OauthTokenRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.OauthToken(&raw)
+	response, err := h.esb.OauthToken(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ESBHandler) CreateFreightOrderHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &CreateFreightOrderRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.CreateFreightOrder(&raw)
+	response, err := h.esb.CreateFreightOrder(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ESBHandler) DOCreationHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &DOCreationRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.DOCreation(&raw)
+	response, err := h.esb.DOCreation(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ESBHandler) LegoupdateOrderStatusHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &LegoupdateOrderStatusRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.LegoupdateOrderStatus(&raw)
+	response, err := h.esb.LegoupdateOrderStatus(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ESBHandler) PersosimHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &PersosimRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.Persosim(&raw)
+	response, err := h.esb.Persosim(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ESBHandler) SerialNumberExpirationDateHandler(w http.ResponseWriter, r *http.Request) {
-	var raw json.RawMessage
-	if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+	request := &SerialNumberExpirationDateRequest{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resp, err := h.esb.SerialNumberExpirationDate(&raw)
+	response, err := h.esb.SerialNumberExpirationDate(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(resp)
+	json.NewEncoder(w).Encode(response)
 }
-

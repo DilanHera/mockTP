@@ -217,22 +217,46 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		}
 		im.UserSendSimSerialNo = &r
 	case "oauthToken":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.OauthTokenResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserOauthToken = &r
 	case "createFreightOrder":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.CreateFreightOrderResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserCreateFreightOrder = &r
 	case "doCreation":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.DOCreationResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserDOCreation = &r
 	case "legoUpdateOrderStatus":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.LegoupdateOrderStatusResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserLegoupdateOrderStatus = &r
 	case "persoSim":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.PersosimResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserPersosim = &r
 	case "serialNumberExpirationDate":
-		r := json.RawMessage(append([]byte(nil), jsonData...))
+		var r esb.SerialNumberExpirationDateResponse
+		err := json.Unmarshal(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
 		esb.UserSerialNumberExpirationDate = &r
 	default:
 		return fmt.Errorf("unknown resource name: %s", resourceName)
