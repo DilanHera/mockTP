@@ -1,8 +1,6 @@
 package serviceprovisioning
 
 import (
-	"fmt"
-
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
 )
 
@@ -16,11 +14,12 @@ type QuerySimInfoRequestResourceItem struct {
 type QuerySimInfoResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader `json:"responseHeader" validate:"required"`
 	ResourceItemList []QuerySimInfoResponseItem `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                        `json:"-"`
 }
 
 type QuerySimInfoResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	SimSerialNoList []SimSerialNoListItem `json:"simSerialNoList,omitempty" validate:"required,dive"`
+	SimSerialNoList []SimSerialNoListItem `json:"simSerialNoList,omitempty" validate:"omitempty,dive"`
 }
 
 type SimSerialNoListItem struct {
@@ -44,12 +43,14 @@ type SimSerialNoListItem struct {
 }
 
 func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*QuerySimInfoResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := QuerySimInfoResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if UserQuerySimInfo != nil {
-			return UserQuerySimInfo, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 	var response *QuerySimInfoResponse
 	if result.State == "E" {
@@ -78,6 +79,7 @@ func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceIte
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}
 	} else {
 		response = &QuerySimInfoResponse{
@@ -126,6 +128,7 @@ func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceIte
 					},
 				},
 			},
+			HttpStatusCode: 200,
 		}
 	}
 	return response, nil

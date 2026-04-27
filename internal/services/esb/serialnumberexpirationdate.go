@@ -1,7 +1,5 @@
 package esb
 
-import "fmt"
-
 type SerialNumberExpirationDateRequest struct {
 	MessageID        string                           `json:"messageID"`
 	PartnerMessageID string                           `json:"partnerMessageID"`
@@ -21,6 +19,7 @@ type SerialNumberExpirationDateResponse struct {
 	PartnerName      string                                   `json:"partnerName"`
 	PartnerMessageID string                                   `json:"partnerMessageID"`
 	Item             []SerialNumberExpirationDateResponseItem `json:"item"`
+	HttpStatusCode   int                                      `json:"-"`
 }
 
 type SerialNumberExpirationDateResponseItem struct {
@@ -35,12 +34,14 @@ type SerialNumberExpirationDateResponseItem struct {
 }
 
 func (e *esb) SerialNumberExpirationDate(input *SerialNumberExpirationDateRequest) (*SerialNumberExpirationDateResponse, error) {
-	result := e.GetApiInfo("serialNumberExpirationDate")
+	res := SerialNumberExpirationDateResponse{}
+	result, err := e.app.Service.GetApiInfo("serialNumberExpirationDate", &res)
 	if result.State == "C" {
-		if UserSerialNumberExpirationDate != nil {
-			return UserSerialNumberExpirationDate, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for serialNumberExpirationDate")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 	if result.State == "E" {
 		return &SerialNumberExpirationDateResponse{
@@ -55,6 +56,7 @@ func (e *esb) SerialNumberExpirationDate(input *SerialNumberExpirationDateReques
 					MessageDesc:   "Equipment 37127803 has not been updated",
 				},
 			},
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -74,5 +76,6 @@ func (e *esb) SerialNumberExpirationDate(input *SerialNumberExpirationDateReques
 				ConfirmStatus:  "X",
 			},
 		},
+		HttpStatusCode: 200,
 	}, nil
 }

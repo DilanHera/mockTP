@@ -1,7 +1,5 @@
 package esb
 
-import "fmt"
-
 type DOCreationRequest struct {
 	PartnerName        string              `json:"PartnerName" validate:"required"`
 	PartnerMessageID   string              `json:"PartnerMessageID" validate:"required"`
@@ -66,6 +64,7 @@ type DOCreationResponse struct {
 	PartnerName      string                   `json:"PartnerName" validate:"required"`
 	PartnerMessageID string                   `json:"PartnerMessageID" validate:"required"`
 	Item             []DOCreationResponseItem `json:"Item" validate:"required"`
+	HttpStatusCode   int                      `json:"-"`
 }
 
 type DOCreationResponseItem struct {
@@ -81,12 +80,14 @@ type DOCreationResponseItem struct {
 }
 
 func (e *esb) DOCreation(input *DOCreationRequest) (*DOCreationResponse, error) {
-	result := e.GetApiInfo("doCreation")
+	res := DOCreationResponse{}
+	result, err := e.app.Service.GetApiInfo("doCreation", &res)
 	if result.State == "C" {
-		if UserDOCreation != nil {
-			return UserDOCreation, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for doCreation")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 	if result.State == "E" {
 		return &DOCreationResponse{
@@ -108,6 +109,7 @@ func (e *esb) DOCreation(input *DOCreationRequest) (*DOCreationResponse, error) 
 					SDDocumentCategory: "J",
 				},
 			},
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -141,5 +143,6 @@ func (e *esb) DOCreation(input *DOCreationRequest) (*DOCreationResponse, error) 
 				SDDocumentCategory: "J",
 			},
 		},
+		HttpStatusCode: 200,
 	}, nil
 }

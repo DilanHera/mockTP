@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/go-playground/validator/v10"
@@ -11,6 +12,7 @@ var apiStates = []string{"S", "E", "C"}
 
 type Helper interface {
 	UnmarshalAndValidate(data []byte, v any) error
+	DecodeAndValidate(data []byte, v any) error
 	ValidateStruct(s any) error
 	ToggleApiState(currentState string) string
 }
@@ -31,6 +33,17 @@ func (h *helper) UnmarshalAndValidate(data []byte, v any) error {
 	if err != nil {
 		return err
 	}
+	return h.ValidateStruct(v)
+}
+
+func (h *helper) DecodeAndValidate(data []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+
+	if err := dec.Decode(v); err != nil {
+		return err
+	}
+
 	return h.ValidateStruct(v)
 }
 

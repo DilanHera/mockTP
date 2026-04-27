@@ -1,7 +1,5 @@
 package im
 
-import "fmt"
-
 type SendSimSerialNoRequest struct {
 	TransactionId string `json:"transactionId"`
 	Channel       string `json:"channel"`
@@ -22,15 +20,18 @@ type SendSimSerialNoResponse struct {
 	TransactionId     string `json:"transactionId"`
 	StatusCode        string `json:"statusCode"`
 	SerialNo          string `json:"serialNo"`
+	HttpStatusCode    int    `json:"-"`
 }
 
 func (i *im) SendSimSerialNo(input *SendSimSerialNoRequest) (*SendSimSerialNoResponse, error) {
-	result := i.GetApiInfo("sendSimSerialNo")
+	res := SendSimSerialNoResponse{}
+	result, err := i.app.Service.GetApiInfo("sendSimSerialNo", &res)
 	if result.State == "C" {
-		if UserSendSimSerialNo != nil {
-			return UserSendSimSerialNo, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for sendSimSerialNo")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -43,6 +44,7 @@ func (i *im) SendSimSerialNo(input *SendSimSerialNoRequest) (*SendSimSerialNoRes
 			TransactionId:     "",
 			StatusCode:        "500",
 			SerialNo:          "",
+			HttpStatusCode:    500,
 		}, nil
 	}
 
@@ -55,5 +57,6 @@ func (i *im) SendSimSerialNo(input *SendSimSerialNoRequest) (*SendSimSerialNoRes
 		TransactionId:     input.TransactionId,
 		StatusCode:        "200",
 		SerialNo:          input.SerialNo,
+		HttpStatusCode:    200,
 	}, nil
 }

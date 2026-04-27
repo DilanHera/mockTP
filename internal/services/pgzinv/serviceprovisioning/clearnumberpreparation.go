@@ -1,8 +1,6 @@
 package serviceprovisioning
 
 import (
-	"fmt"
-
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
 )
 
@@ -20,18 +18,18 @@ type ClearNumberPreparationRequestResourceItem struct {
 type ClearNumberPreparationResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader         `json:"responseHeader" validate:"required"`
 	ResourceItemList []pgzinvmodel.ResourceItemListBase `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                                `json:"-"`
 }
 
 func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*ClearNumberPreparationResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := ClearNumberPreparationResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if UserClearNumberPreparationPrepaid != nil && input.ResourceName == "clearNumberPreparationPrepaid" {
-			return UserClearNumberPreparationPrepaid, nil
+		if err != nil {
+			return nil, err
 		}
-		if UserClearNumberPreparationPostpaid != nil && input.ResourceName == "clearNumberPreparationPostpaid" {
-			return UserClearNumberPreparationPostpaid, nil
-		}
-		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -58,6 +56,7 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -84,5 +83,6 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 				},
 			},
 		},
+		HttpStatusCode: 200,
 	}, nil
 }

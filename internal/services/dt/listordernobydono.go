@@ -1,7 +1,6 @@
 package dt
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 )
@@ -13,6 +12,7 @@ type ListOrderNoByDonoResponse struct {
 	ResultDescription string        `json:"resultDescription"`
 	ResultStatus      string        `json:"resultStatus"`
 	ResultObj         []ListOrderNo `json:"resultObj"`
+	HttpStatusCode    int           `json:"-"`
 }
 
 type ListOrderNo struct {
@@ -20,12 +20,14 @@ type ListOrderNo struct {
 }
 
 func (d *dt) ListOrderNoByDono(input []string) (*ListOrderNoByDonoResponse, error) {
-	result := d.GetApiInfo("listOrderNoByDono")
+	res := ListOrderNoByDonoResponse{}
+	result, err := d.app.Service.GetApiInfo("listOrderNoByDono", &res)
 	if result.State == "C" {
-		if UserListOrderNoByDono != nil {
-			return UserListOrderNoByDono, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for listOrderNoByDono")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -34,6 +36,7 @@ func (d *dt) ListOrderNoByDono(input []string) (*ListOrderNoByDonoResponse, erro
 			ResultDescription: "Data Not Found.",
 			ResultStatus:      "F",
 			ResultObj:         []ListOrderNo{},
+			HttpStatusCode:    500,
 		}, nil
 	}
 
@@ -41,6 +44,7 @@ func (d *dt) ListOrderNoByDono(input []string) (*ListOrderNoByDonoResponse, erro
 		ResultCode:        "20000",
 		ResultDescription: "Success",
 		ResultStatus:      "S",
+		HttpStatusCode:    200,
 		ResultObj: []ListOrderNo{
 			{
 				ListOrderNo: []string{},

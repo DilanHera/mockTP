@@ -1,7 +1,5 @@
 package esb
 
-import "fmt"
-
 type CreateFreightOrderRequest struct {
 	MessageID            string                   `json:"MessageID" validate:"required"`
 	PartnerName          string                   `json:"PartnerName" validate:"required"`
@@ -47,15 +45,18 @@ type CreateFreightOrderResponse struct {
 	MessageID          string `json:"MessageID" validate:"required"`
 	PartnerName        string `json:"PartnerName" validate:"required"`
 	PartnerMessageID   string `json:"PartnerMessageID" validate:"required"`
+	HttpStatusCode     int    `json:"-"`
 }
 
 func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreightOrderResponse, error) {
-	result := e.GetApiInfo("createFreightOrder")
+	res := CreateFreightOrderResponse{}
+	result, err := e.app.Service.GetApiInfo("createFreightOrder", &res)
 	if result.State == "C" {
-		if UserCreateFreightOrder != nil {
-			return UserCreateFreightOrder, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for createFreightOrder")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 	if result.State == "E" {
 		return &CreateFreightOrderResponse{
@@ -65,6 +66,7 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 			MessageID:          "58969D1B6FAF410DB04DCC65D0689918",
 			PartnerName:        "OPTIMUS",
 			PartnerMessageID:   "2026042115083192543",
+			HttpStatusCode:     500,
 		}, nil
 	}
 
@@ -75,5 +77,6 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 		MessageID:          "ECF92F6BF2EA4976B423247278CEB458",
 		PartnerName:        "OPTIMUS",
 		PartnerMessageID:   "20260427080253557",
+		HttpStatusCode:     200,
 	}, nil
 }

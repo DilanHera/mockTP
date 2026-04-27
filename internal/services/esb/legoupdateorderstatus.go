@@ -1,7 +1,5 @@
 package esb
 
-import "fmt"
-
 type LegoupdateOrderStatusRequest struct {
 	ReferWebSessionID string                         `json:"referWebSessionID" validate:"required"`
 	ReferChannel      string                         `json:"referChannel" validate:"required"`
@@ -24,21 +22,25 @@ type LegoupdateOrderStatusResponse struct {
 	Result        string `json:"result" validate:"required"`
 	StatusOrder   string `json:"statusOrder" validate:"required"`
 	OrderNo       string `json:"orderNo" validate:"required"`
+	HttpStatusCode int   `json:"-"`
 }
 
 func (e *esb) LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*LegoupdateOrderStatusResponse, error) {
-	result := e.GetApiInfo("legoUpdateOrderStatus")
+	res := LegoupdateOrderStatusResponse{}
+	result, err := e.app.Service.GetApiInfo("legoUpdateOrderStatus", &res)
 	if result.State == "C" {
-		if UserLegoupdateOrderStatus != nil {
-			return UserLegoupdateOrderStatus, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for legoUpdateOrderStatus")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 	if result.State == "E" {
 		return &LegoupdateOrderStatusResponse{
 			TransactionID: "2ad5135a-8cb6-482a-9f48-610ef68cc435",
 			ResultCode:    "50000",
 			ResultMessage: "Failed: legoUpdateOrderStatus (1)",
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -49,5 +51,6 @@ func (e *esb) LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*Legou
 		Result:        "{}",
 		StatusOrder:   "03",
 		OrderNo:       "AS2604261179348",
+		HttpStatusCode: 200,
 	}, nil
 }

@@ -1,7 +1,5 @@
 package phx
 
-import "fmt"
-
 type ProductProvisioningRequest struct {
 	SimType            string             `json:"simType" validate:"omitempty"`
 	KeyCorrelate       string             `json:"keyCorrelate" validate:"required"`
@@ -52,6 +50,7 @@ type ProductProvisioningResponse struct {
 	ResultDesc          string              `json:"resultDesc"`
 	CustomerOrderId     string              `json:"customerOrderId"`
 	PhxResponseItemList []PhxResponseItemPP `json:"phxResponseItemList"`
+	HttpStatusCode      int                 `json:"-"`
 }
 
 type PhxResponseItemPP struct {
@@ -63,23 +62,27 @@ type PhxResponseItemPP struct {
 }
 
 func (p *phx) ProductProvisioning(input *ProductProvisioningRequest) (*ProductProvisioningResponse, error) {
-	result := p.GetApiInfo("productProvisioning")
+	res := ProductProvisioningResponse{}
+	result, err := p.app.Service.GetApiInfo("productProvisioning", &res)
 	if result.State == "C" {
-		if UserProductProvisioning != nil {
-			return UserProductProvisioning, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for productProvisioning")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
 		return &ProductProvisioningResponse{
 			ResultCode: "50000",
 			ResultDesc: "Failed: productProvisioning (1)",
+			HttpStatusCode: 500,
 		}, nil
 	}
 
 	return &ProductProvisioningResponse{
 		ResultCode: "20000",
 		ResultDesc: "Success",
+		HttpStatusCode: 200,
 	}, nil
 }

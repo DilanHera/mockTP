@@ -92,4 +92,5 @@ type SpecialErrHandling struct {
 type ServiceProvisioningResponse struct {
 	ResponseHeader   ResponseHeader `json:"responseHeader" validate:"required"`
 	ResourceItemList []any          `json:"resourceItemList" validate:"required"`
+	HttpStatusCode   int            `json:"-"`
 }

@@ -1,8 +1,6 @@
 package serviceprovisioning
 
 import (
-	"fmt"
-
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
 )
 
@@ -17,18 +15,18 @@ type LockNumberByMobileRequestResourceItem struct {
 type LockNumberByMobileResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader         `json:"responseHeader" validate:"required"`
 	ResourceItemList []pgzinvmodel.ResourceItemListBase `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                                `json:"-"`
 }
 
 func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*LockNumberByMobileResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := LockNumberByMobileResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if UserLockNumberByMobilePrepaid != nil && input.ResourceName == "lockNumberByMobilePrepaid" {
-			return UserLockNumberByMobilePrepaid, nil
+		if err != nil {
+			return nil, err
 		}
-		if UserLockNumberByMobilePostpaid != nil && input.ResourceName == "lockNumberByMobilePostpaid" {
-			return UserLockNumberByMobilePostpaid, nil
-		}
-		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -55,6 +53,7 @@ func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileReques
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -81,6 +80,7 @@ func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileReques
 				},
 			},
 		},
+		HttpStatusCode: 200,
 	}
 	return response, nil
 }

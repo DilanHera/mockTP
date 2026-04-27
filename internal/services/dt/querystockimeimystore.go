@@ -1,7 +1,5 @@
 package dt
 
-import "fmt"
-
 type QueryStockImeiMyStoreRequest struct {
 	LocationCode string `json:"locationCode" validate:"required"`
 	SubStock     string `json:"subStock" validate:"required"`
@@ -13,6 +11,7 @@ type QueryStockImeiMyStoreResponse struct {
 	ResultDescription string        `json:"resultDescription"`
 	DeveloperMessage  string        `json:"developerMessage"`
 	ListProduct       []ListProduct `json:"listProduct"`
+	HttpStatusCode    int           `json:"-"`
 }
 
 type ListProduct struct {
@@ -32,12 +31,14 @@ type ListProduct struct {
 }
 
 func (d *dt) QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryStockImeiMyStoreResponse, error) {
-	result := d.GetApiInfo("queryStockImeiMyStore")
+	res := QueryStockImeiMyStoreResponse{}
+	result, err := d.app.Service.GetApiInfo("queryStockImeiMyStore", &res)
 	if result.State == "C" {
-		if UserQueryStockImeiMyStore != nil {
-			return UserQueryStockImeiMyStore, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for queryStockImeiMyStore")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -46,6 +47,7 @@ func (d *dt) QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryS
 			ResultDescription: "Product not found",
 			DeveloperMessage:  "Product not found",
 			ListProduct:       []ListProduct{},
+			HttpStatusCode:    500,
 		}, nil
 	}
 
@@ -53,6 +55,7 @@ func (d *dt) QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryS
 		ResultCode:        "20000",
 		ResultDescription: "Success",
 		DeveloperMessage:  "Success",
+		HttpStatusCode:    200,
 		ListProduct: []ListProduct{
 			{
 				LocationCode:   "4289",

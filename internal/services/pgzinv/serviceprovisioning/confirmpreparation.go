@@ -1,8 +1,6 @@
 package serviceprovisioning
 
 import (
-	"fmt"
-
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
 )
 
@@ -38,11 +36,12 @@ type ConfirmPreparationRequestResourceItem struct {
 type ConfirmPreparationResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader       `json:"responseHeader" validate:"required"`
 	ResourceItemList []ConfirmPreparationResponseItem `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                              `json:"-"`
 }
 
 type ConfirmPreparationResponseItem struct {
 	pgzinvmodel.ResourceItemListBase
-	ConfirmPrepResponse []ConfirmPrepResponseItem `json:"confirmPrepResponse,omitempty" validate:"omitempty"`
+	ConfirmPrepResponse []ConfirmPrepResponseItem `json:"confirmPrepResponse,omitempty" validate:"omitempty,dive"`
 }
 
 type ConfirmPrepResponseItem struct {
@@ -63,15 +62,14 @@ type ConfirmPrepResponseItem struct {
 }
 
 func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (ConfirmPreparationResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := ConfirmPreparationResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if UserConfirmPreparationPrepaid != nil && input.ResourceName == "confirmPreparationPrepaid" {
-			return *UserConfirmPreparationPrepaid, nil
+		if err != nil {
+			return ConfirmPreparationResponse{}, err
 		}
-		if UserConfirmPreparationPostpaid != nil && input.ResourceName == "confirmPreparationPostpaid" {
-			return *UserConfirmPreparationPostpaid, nil
-		}
-		return ConfirmPreparationResponse{}, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return res, nil
 	}
 	response := &ConfirmPreparationResponse{}
 	if result.State == "E" {
@@ -100,6 +98,7 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}
 	} else {
 		response = &ConfirmPreparationResponse{
@@ -145,6 +144,7 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 					},
 				},
 			},
+			HttpStatusCode: 200,
 		}
 	}
 	return *response, nil

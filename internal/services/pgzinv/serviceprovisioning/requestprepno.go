@@ -1,7 +1,6 @@
 package serviceprovisioning
 
 import (
-	"fmt"
 	"strconv"
 
 	pgzinvmodel "github.com/DilanHera/mockTP/internal/services/pgzinv/model"
@@ -22,6 +21,7 @@ type RequestPrepNoRequestResourceItem struct {
 type RequestPrepNoResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader  `json:"responseHeader" validate:"required"`
 	ResourceItemList []RequestPrepNoResponseItem `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                         `json:"-"`
 }
 
 type RequestPrepNoResponseItem struct {
@@ -34,15 +34,14 @@ type RequestPrepNoResponseItem struct {
 }
 
 func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*RequestPrepNoResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := RequestPrepNoResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if UserRequestPrepNoPrepaid != nil && input.ResourceName == "requestPrepNoPrepaid" {
-			return UserRequestPrepNoPrepaid, nil
+		if err != nil {
+			return nil, err
 		}
-		if UserRequestPrepNoPostpaid != nil && input.ResourceName == "requestPrepNoPostpaid" {
-			return UserRequestPrepNoPostpaid, nil
-		}
-		return nil, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -71,6 +70,7 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -103,6 +103,7 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 				PrepNoFrom:   "9300015000",
 			},
 		},
+		HttpStatusCode: 200,
 	}
 	prepNoFrom, err := strconv.Atoi(response.ResourceItemList[0].PrepNoFrom)
 	if err != nil {

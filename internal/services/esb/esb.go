@@ -5,7 +5,7 @@ import (
 )
 
 type ESB interface {
-	OauthToken(input *OauthTokenRequest) (*OauthTokenResponse, error)
+	OauthToken(input *OauthTokenRequest) (OauthTokenResponse, error)
 	CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreightOrderResponse, error)
 	DOCreation(input *DOCreationRequest) (*DOCreationResponse, error)
 	LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*LegoupdateOrderStatusResponse, error)

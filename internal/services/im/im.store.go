@@ -15,7 +15,7 @@ var (
 )
 
 func (i *im) GetApiInfo(apiName string) store.ApiInfo {
-	res, err := i.app.AppInfoStore.Get(apiName)
+	res, err := i.app.ApiInfoStore.Get(apiName)
 	if err != nil {
 		return store.ApiInfo{}
 	}
@@ -39,7 +39,7 @@ func CreateResponse(resp []byte, name string) {
 
 func InitIMStore(app *app.App) {
 	for _, apiName := range apiNames {
-		app.AppInfoStore.Create(apiName, "", "S")
+		app.ApiInfoStore.Create(apiName, "", "S", 200)
 	}
 }
 

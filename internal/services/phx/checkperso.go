@@ -1,7 +1,5 @@
 package phx
 
-import "fmt"
-
 type CheckPersoRequest struct {
 	PublicIdType        string `json:"publicIdType" validate:"required"`
 	PublicIdValue       string `json:"publicIdValue" validate:"omitempty"`
@@ -27,6 +25,7 @@ type CheckPersoResponse struct {
 	DeveloperMessage string          `json:"developerMessage"`
 	ResultDesc       string          `json:"resultDesc"`
 	ResultData       ResultDataPerso `json:"resultData"`
+	HttpStatusCode   int             `json:"-"`
 }
 
 type ResultDataPerso struct {
@@ -139,12 +138,14 @@ type ImsiItem struct {
 }
 
 func (p *phx) CheckPerso(input *CheckPersoRequest) (*CheckPersoResponse, error) {
-	result := p.GetApiInfo("checkPerso")
+	res := CheckPersoResponse{}
+	result, err := p.app.Service.GetApiInfo("checkPerso", &res)
 	if result.State == "C" {
-		if UserCheckPerso != nil {
-			return UserCheckPerso, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for checkPerso")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -152,6 +153,7 @@ func (p *phx) CheckPerso(input *CheckPersoRequest) (*CheckPersoResponse, error) 
 			ResultCode:       "50000",
 			DeveloperMessage: "Mock Error",
 			ResultDesc:       "Mock Error",
+			HttpStatusCode:   500,
 		}, nil
 	}
 
@@ -159,6 +161,7 @@ func (p *phx) CheckPerso(input *CheckPersoRequest) (*CheckPersoResponse, error) 
 		ResultCode:       "20000",
 		DeveloperMessage: "",
 		ResultDesc:       "Success",
+		HttpStatusCode:   200,
 		ResultData: ResultDataPerso{
 			SimItem: SimItem{
 				Imsi:                    "",

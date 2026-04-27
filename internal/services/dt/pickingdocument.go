@@ -1,7 +1,5 @@
 package dt
 
-import "fmt"
-
 type PickingDocumentRequest struct {
 	DocNo          string        `json:"docNo" validate:"required"`
 	DocType        string        `json:"docType" validate:"required"`
@@ -27,15 +25,18 @@ type PickingDocumentResponse struct {
 	ResultCode string `json:"resultCode"`
 	ResultDesc string `json:"resultDescription"`
 	Status     string `json:"status"`
+	HttpStatusCode int `json:"-"`
 }
 
 func (d *dt) PickingDocument(input *PickingDocumentRequest) (*PickingDocumentResponse, error) {
-	result := d.GetApiInfo("pickingDocument")
+	res := PickingDocumentResponse{}
+	result, err := d.app.Service.GetApiInfo("pickingDocument", &res)
 	if result.State == "C" {
-		if UserPickingDocument != nil {
-			return UserPickingDocument, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for pickingDocument")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -43,6 +44,7 @@ func (d *dt) PickingDocument(input *PickingDocumentRequest) (*PickingDocumentRes
 			ResultCode: "50000",
 			ResultDesc: "Not found picking items to picking document",
 			Status:     "F",
+			HttpStatusCode: 500,
 		}, nil
 	}
 
@@ -50,6 +52,7 @@ func (d *dt) PickingDocument(input *PickingDocumentRequest) (*PickingDocumentRes
 		ResultCode: "20000",
 		ResultDesc: "Success picking document list",
 		Status:     "S",
+		HttpStatusCode: 200,
 	}
 	return response, nil
 }

@@ -1,7 +1,5 @@
 package dt
 
-import "fmt"
-
 type UpdateSimSerialPersoRequest struct {
 	OrderNo  string `json:"orderNo" validate:"required"`
 	MobileNo string `json:"mobileNo" validate:"required"`
@@ -12,15 +10,18 @@ type UpdateSimSerialPersoResponse struct {
 	ResultCode        string `json:"resultCode"`
 	ResultDescription string `json:"resultDescription"`
 	Status            string `json:"status"`
+	HttpStatusCode    int    `json:"-"`
 }
 
 func (d *dt) UpdateSimSerialPerso(input *UpdateSimSerialPersoRequest) (*UpdateSimSerialPersoResponse, error) {
-	result := d.GetApiInfo("updateSimSerialPerso")
+	res := UpdateSimSerialPersoResponse{}
+	result, err := d.app.Service.GetApiInfo("updateSimSerialPerso", &res)
 	if result.State == "C" {
-		if UserUpdateSimSerialPerso != nil {
-			return UserUpdateSimSerialPerso, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for updateSimSerialPerso")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
@@ -28,6 +29,7 @@ func (d *dt) UpdateSimSerialPerso(input *UpdateSimSerialPersoRequest) (*UpdateSi
 			ResultCode:        "50000",
 			ResultDescription: "Data Not Found",
 			Status:            "F",
+			HttpStatusCode:    500,
 		}, nil
 	}
 
@@ -35,5 +37,6 @@ func (d *dt) UpdateSimSerialPerso(input *UpdateSimSerialPersoRequest) (*UpdateSi
 		ResultCode:        "20000",
 		ResultDescription: "Success",
 		Status:            "S",
+		HttpStatusCode:    200,
 	}, nil
 }

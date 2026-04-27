@@ -1,7 +1,5 @@
 package phx
 
-import "fmt"
-
 type NewRegistrationRequest struct {
 	KeyCorrelate       string           `json:"keyCorrelate" validate:"required"`
 	PublicIdType       string           `json:"publicIdType" validate:"required"`
@@ -37,30 +35,34 @@ type PhxRequestItem struct {
 }
 
 type NewRegistrationResponse struct {
-	ResultCode string `json:"resultCode" validate:"required"`
-	ResultDesc string `json:"resultDesc" validate:"required"`
+	ResultCode     string `json:"resultCode" validate:"required"`
+	ResultDesc     string `json:"resultDesc" validate:"required"`
+	HttpStatusCode int    `json:"-"`
 }
 
 func (p *phx) NewRegistration(input *NewRegistrationRequest) (*NewRegistrationResponse, error) {
-	result := p.GetApiInfo("newRegistration")
+	res := NewRegistrationResponse{}
+	result, err := p.app.Service.GetApiInfo("newRegistration", &res)
 	if result.State == "C" {
-		if UserNewRegistration != nil {
-			return UserNewRegistration, nil
+		if err != nil {
+			return nil, err
 		}
-		return nil, fmt.Errorf("no custom response set for newRegistration")
+		res.HttpStatusCode = result.HttpCode
+		return &res, nil
 	}
 
 	if result.State == "E" {
 		return &NewRegistrationResponse{
-			ResultCode: "50000",
-			ResultDesc: "Failed: newRegistration (1)",
+			ResultCode:     "50000",
+			ResultDesc:     "Failed: newRegistration (1)",
+			HttpStatusCode: 500,
 		}, nil
 	}
 
 	response := &NewRegistrationResponse{
-		ResultCode: "20000",
-		ResultDesc: "Success",
+		ResultCode:     "20000",
+		ResultDesc:     "Success",
+		HttpStatusCode: 200,
 	}
-	UserNewRegistration = response
 	return response, nil
 }

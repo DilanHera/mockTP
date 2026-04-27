@@ -2,10 +2,12 @@ package tui
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/DilanHera/mockTP/internal/app"
+	"github.com/DilanHera/mockTP/internal/services/im"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -50,6 +52,7 @@ type model struct {
 	jsonMockParent   screen
 	jsonMockResource string
 	ta               textarea.Model
+	tas              textarea.Model
 	jsonErr          string
 	// Shown on the service provisioning list after Ctrl+S save from the JSON editor.
 	saveNotice string
@@ -147,6 +150,21 @@ func (m *model) newPHXMockTextarea(apiName, value string) textarea.Model {
 	return t
 }
 
+func (m *model) newHttpCodeTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 3
+	content := value
+	if content == "" {
+		content = m.HttpStatusCodePlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
 func isJSONMockScreen(s screen) bool {
 	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON || s == screenIMMockJSON || s == screenESBMockJSON
 }
@@ -169,9 +187,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		if isJSONMockScreen(m.screen) {
 			layoutJSONEditor(m)
-			var cmd tea.Cmd
-			m.ta, cmd = m.ta.Update(msg)
-			return m, cmd
+			// Resize both editors (PHX has two inputs)
+			var cmd1, cmd2 tea.Cmd
+			m.tas, cmd1 = m.tas.Update(msg)
+			m.ta, cmd2 = m.ta.Update(msg)
+			return m, tea.Batch(cmd1, cmd2)
 		}
 		return m, nil
 
@@ -185,15 +205,26 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "f4":
 				m.jsonErr = ""
 				m.ta.Reset()
+				m.tas.Reset()
 				layoutJSONEditor(m)
-				return m, m.ta.Focus()
+				return m, m.tas.Focus()
+			case "tab":
+				// Mock JSON editors have two inputs: HttpStatusCode and JSON.
+				if m.tas.Focused() {
+					m.tas.Blur()
+					return m, m.ta.Focus()
+				}
+				m.ta.Blur()
+				return m, m.tas.Focus()
 			}
 			if isJSONSubmit(msg) {
 				return m.submitMockJSON()
 			}
-			var cmd tea.Cmd
-			m.ta, cmd = m.ta.Update(msg)
-			return m, cmd
+			// Update focused editors.
+			var cmd1, cmd2 tea.Cmd
+			m.tas, cmd1 = m.tas.Update(msg)
+			m.ta, cmd2 = m.ta.Update(msg)
+			return m, tea.Batch(cmd1, cmd2)
 		}
 
 		switch msg.String() {
@@ -458,8 +489,9 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.saveNotice = ""
 		m.jsonErr = ""
 		m.ta = m.newServiceProvisioningMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	case screenPHX:
 		if m.cursor < 0 || m.cursor >= len(PHXApis) {
@@ -472,8 +504,9 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.saveNotice = ""
 		m.jsonErr = ""
 		m.ta = m.newPHXMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	case screenDT:
 		if m.cursor < 0 || m.cursor >= len(DTApis) {
@@ -486,8 +519,9 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.saveNotice = ""
 		m.jsonErr = ""
 		m.ta = m.newDTMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	case screenIM:
 		if m.cursor < 0 || m.cursor >= len(IMApis) {
@@ -500,8 +534,9 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.saveNotice = ""
 		m.jsonErr = ""
 		m.ta = m.newIMMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	case screenESB:
 		if m.cursor < 0 || m.cursor >= len(ESBApis) {
@@ -514,8 +549,9 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.saveNotice = ""
 		m.jsonErr = ""
 		m.ta = m.newESBMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	}
 	return m, nil
@@ -548,102 +584,198 @@ func (m *model) submitMockJSON() (tea.Model, tea.Cmd) {
 
 func (m *model) submitServiceProvisioningMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	var err error
-	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenServiceProvisioningMockJSON
+		m.ta = m.newServiceProvisioningMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenServiceProvisioningMockJSON
 		m.ta = m.newServiceProvisioningMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	}
+
 	m.screen = screenServiceProvisioning
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.saveNotice = "Saved successfully."
 	m.ta.Blur()
+	m.tas.Blur()
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
 func (m *model) submitPHXMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	var err error
-	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	// Persist HttpStatusCode (PHX only).
+	httpCodeRaw := strings.TrimSpace(m.tas.Value())
+	if httpCodeRaw == "" {
+		httpCodeRaw = "200"
+	}
+	var httpCode int
+	_, scanErr := fmt.Sscanf(httpCodeRaw, "%d", &httpCode)
+	if scanErr != nil || httpCode < 100 || httpCode > 999 {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenPHXMockJSON
+		m.ta = m.newPHXMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenPHXMockJSON
 		m.ta = m.newPHXMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
 		layoutJSONEditor(m)
 		cmd := m.ta.Focus()
 		return m, cmd
 	}
+
 	m.screen = screenPHX
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.saveNotice = "Saved successfully."
 	m.ta.Blur()
+	m.tas.Blur()
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
 func (m *model) submitDTMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	var err error
-	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenDTMockJSON
+		m.ta = m.newDTMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenDTMockJSON
 		m.ta = m.newDTMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	}
+
 	m.screen = screenDT
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.saveNotice = "Saved successfully."
 	m.ta.Blur()
+	m.tas.Blur()
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
 func (m *model) submitIMMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	var err error
-	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenIMMockJSON
+		m.ta = m.newIMMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenIMMockJSON
 		m.ta = m.newIMMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	}
+
+	switch m.jsonMockResource {
+	case "sendSimSerialNo":
+		if im.UserSendSimSerialNo != nil {
+			im.UserSendSimSerialNo.HttpStatusCode = httpCode
+		}
+	}
+
 	m.screen = screenIM
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.saveNotice = "Saved successfully."
 	m.ta.Blur()
+	m.tas.Blur()
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
 func (m *model) submitESBMockJSON() (tea.Model, tea.Cmd) {
 	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
-	var err error
-	err = m.SetCustomResponse(m.jsonMockResource, raw)
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenESBMockJSON
+		m.ta = m.newESBMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
 	if err != nil {
 		m.jsonErr = err.Error()
 		m.screen = screenESBMockJSON
 		m.ta = m.newESBMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
 		layoutJSONEditor(m)
-		cmd := m.ta.Focus()
+		cmd := m.tas.Focus()
 		return m, cmd
 	}
+
 	m.screen = screenESB
 	m.jsonMockResource = ""
 	m.jsonErr = ""
 	m.saveNotice = "Saved successfully."
 	m.ta.Blur()
+	m.tas.Blur()
 	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
+func parseHTTPStatusCode(raw string) (int, bool) {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		s = "200"
+	}
+	var code int
+	_, err := fmt.Sscanf(s, "%d", &code)
+	if err != nil || code < 100 || code > 999 {
+		return 0, false
+	}
+	return code, true
 }
 
 func (m *model) goBack() *model {
@@ -708,13 +840,17 @@ func (m *model) View() string {
 		var b strings.Builder
 		b.WriteString(styleTitle.Render(m.breadcrumb()))
 		b.WriteString("\n\n")
+		b.WriteString("HttpStatusCode: " + m.tas.View())
+		b.WriteString("\n\n")
+		b.WriteString("Response:")
+		b.WriteString("\n")
 		b.WriteString(m.ta.View())
 		if m.jsonErr != "" {
 			b.WriteString("\n\n")
 			b.WriteString(styleErr.Render("Error: " + m.jsonErr))
 		}
 		b.WriteString("\n\n")
-		b.WriteString(styleHelp.Render("Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C quit"))
+		b.WriteString(styleHelp.Render("Tab switch input · Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C quit"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("F4 clear editor · Ctrl+Home / Ctrl+End jump document"))
 		b.WriteString("\n")

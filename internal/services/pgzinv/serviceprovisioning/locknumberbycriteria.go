@@ -29,6 +29,7 @@ type LockNumberByCriteriaRequestResourceItem struct {
 type LockNumberByCriteriaResponse struct {
 	ResponseHeader   pgzinvmodel.ResponseHeader         `json:"responseHeader" validate:"required"`
 	ResourceItemList []LockNumberByCriteriaResponseItem `json:"resourceItemList" validate:"required,dive"`
+	HttpStatusCode   int                                `json:"-"`
 }
 
 type LockNumberByCriteriaResponseItem struct {
@@ -42,15 +43,14 @@ type RequestPrepResponseItem struct {
 }
 
 func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (LockNumberByCriteriaResponse, error) {
-	result := s.GetApiInfo(input.ResourceName)
+	res := LockNumberByCriteriaResponse{}
+	result, err := s.app.Service.GetApiInfo(input.ResourceName, &res)
 	if result.State == "C" {
-		if input.ResourceName == "lockNumberByCriteriaPrepaid" && UserLockNumberByCriteriaPrepaid != nil {
-			return *UserLockNumberByCriteriaPrepaid, nil
+		if err != nil {
+			return LockNumberByCriteriaResponse{}, err
 		}
-		if input.ResourceName == "lockNumberByCriteriaPostpaid" && UserLockNumberByCriteriaPostpaid != nil {
-			return *UserLockNumberByCriteriaPostpaid, nil
-		}
-		return LockNumberByCriteriaResponse{}, fmt.Errorf("no custom response set for %s", input.ResourceName)
+		res.HttpStatusCode = result.HttpCode
+		return res, nil
 	}
 	response := &LockNumberByCriteriaResponse{}
 	if result.State == "E" {
@@ -79,6 +79,7 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 					},
 				},
 			},
+			HttpStatusCode: 500,
 		}
 	} else {
 		response = &LockNumberByCriteriaResponse{
@@ -108,6 +109,7 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 					RequestPrepResponse: []RequestPrepResponseItem{},
 				},
 			},
+			HttpStatusCode: 200,
 		}
 		quantity, err := strconv.Atoi(input.Quantity)
 		if err != nil {
