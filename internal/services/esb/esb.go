@@ -4,6 +4,15 @@ import (
 	"github.com/DilanHera/mockTP/internal/app"
 )
 
+var apiNames = []string{
+	"oauthToken",
+	"createFreightOrder",
+	"doCreation",
+	"legoUpdateOrderStatus",
+	"persoSim",
+	"serialNumberExpirationDate",
+}
+
 type ESB interface {
 	OauthToken(input *OauthTokenRequest) (OauthTokenResponse, error)
 	CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreightOrderResponse, error)
@@ -18,5 +27,6 @@ type esb struct {
 }
 
 func NewESB(app *app.App) ESB {
+	app.Service.InitServiceStore(apiNames)
 	return &esb{app: app}
 }

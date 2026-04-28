@@ -18,6 +18,9 @@ type dt struct {
 	app *app.App
 }
 
+var apiNames = []string{"listOrderNoByDono", "pickingDocument", "queryPrint", "queryStockImeiMyStore", "reprintReceiptForm", "updateSimSerialPerso", "authenticate"}
+
 func NewDT(app *app.App) DT {
+	app.Service.InitServiceStore(apiNames)
 	return &dt{app: app}
 }

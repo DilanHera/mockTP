@@ -1,5 +1,11 @@
 package tui
 
+import (
+	"encoding/json"
+
+	"github.com/DilanHera/mockTP/internal/services/esb"
+)
+
 // func(m *model) ServiceProvisioningMockPlaceholder(resourceName string) string {
 // 	switch resourceName {
 // 	case "lockNumberByCriteriaPrepaid":
@@ -39,3 +45,18 @@ package tui
 // 		return "{}"
 // 	}
 // }
+
+func EsbMockPlaceholder(apiName string) string {
+	switch apiName {
+	case "oauthToken":
+		res, _ := json.Marshal(esb.OauthTokenResponse{
+			AccessToken: "mock-token",
+			TokenType:   "bearer",
+			ExpiresIn:   3600,
+			Error:       "remove for success case",
+		})
+		return string(res)
+	default:
+		return "{}"
+	}
+}

@@ -3,11 +3,13 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/im"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -54,6 +56,7 @@ type model struct {
 	ta               textarea.Model
 	tas              textarea.Model
 	jsonErr          string
+	jsonPlaceholder  string
 	// Shown on the service provisioning list after Ctrl+S save from the JSON editor.
 	saveNotice string
 }
@@ -177,6 +180,28 @@ func clearSaveNoticeAfter(d time.Duration) tea.Cmd {
 	return tea.Tick(d, func(time.Time) tea.Msg { return clearSaveNoticeMsg{} })
 }
 
+func renderHelpKeys(s string) string {
+	// Render common keyboard tokens with a dedicated style so they stand out.
+	// Keep this simple (string replacement) since the help copy is static.
+	r := strings.NewReplacer(
+		"Tab", styleKey.Render("Tab"),
+		"Esc", styleKey.Render("Esc"),
+		"Enter", styleKey.Render("Enter"),
+		"Ctrl+S", styleKey.Render("Ctrl+S"),
+		"Ctrl+C", styleKey.Render("Ctrl+C"),
+		"Ctrl+X", styleKey.Render("Ctrl+X"),
+		"Ctrl+Home", styleKey.Render("Ctrl+Home"),
+		"Ctrl+End", styleKey.Render("Ctrl+End"),
+		"F4", styleKey.Render("F4"),
+		"↑/↓", styleKey.Render("↑/↓"),
+	)
+	out := r.Replace(s)
+	// Single-letter tokens must only match whole words; otherwise we'd color every "t" in text.
+	out = regexp.MustCompile(`\bt\b`).ReplaceAllString(out, styleKey.Render("t"))
+	out = regexp.MustCompile(`\bq\b`).ReplaceAllString(out, styleKey.Render("q"))
+	return out
+}
+
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case clearSaveNoticeMsg:
@@ -199,6 +224,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if isJSONMockScreen(m.screen) {
 			switch msg.String() {
 			case "ctrl+c":
+				clipboard.WriteAll(m.jsonPlaceholder)
+			case "ctrl+x":
 				return m, tea.Quit
 			case "esc":
 				return m.leaveJSONEditor(), nil
@@ -231,7 +258,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "t", "T":
 			m.toggleErrorState()
 			return m, nil
-		case "ctrl+c", "q":
+		case "ctrl+x", "q":
 			return m, tea.Quit
 		case "esc":
 			if m.screen == screenRoot {
@@ -548,6 +575,7 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
+		m.jsonPlaceholder = EsbMockPlaceholder(name)
 		m.ta = m.newESBMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
@@ -561,6 +589,7 @@ func (m *model) leaveJSONEditor() *model {
 	m.screen = m.jsonMockParent
 	m.jsonMockResource = ""
 	m.jsonErr = ""
+	m.jsonPlaceholder = ""
 	m.ta.Blur()
 	return m
 }
@@ -840,6 +869,7 @@ func (m *model) View() string {
 		var b strings.Builder
 		b.WriteString(styleTitle.Render(m.breadcrumb()))
 		b.WriteString("\n\n")
+		// b.WriteString("Placeholder: " + m.jsonPlaceholder + "\n")
 		b.WriteString("HttpStatusCode: " + m.tas.View())
 		b.WriteString("\n\n")
 		b.WriteString("Response:")
@@ -850,9 +880,9 @@ func (m *model) View() string {
 			b.WriteString(styleErr.Render("Error: " + m.jsonErr))
 		}
 		b.WriteString("\n\n")
-		b.WriteString(styleHelp.Render("Tab switch input · Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Tab switch input · Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C copy placeholder · Ctrl+X quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("F4 clear editor · Ctrl+Home / Ctrl+End jump document"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("F4 clear editor · Ctrl+Home / Ctrl+End jump document")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("(clear editor + save) to reset mock to default"))
 		return b.String()
@@ -917,37 +947,37 @@ func (m *model) View() string {
 	b.WriteString("\n")
 	switch m.screen {
 	case screenServiceProvisioning:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
 	case screenPHX:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
 	case screenDT:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
 	case screenIM:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
 	case screenESB:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + "."))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
 	default:
-		b.WriteString(styleHelp.Render("↑/↓ · Enter open · Esc back (root: quit) · q quit"))
+		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open · Esc back (root: quit) · q quit")))
 	}
 	return b.String()
 }

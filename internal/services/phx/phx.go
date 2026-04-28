@@ -4,6 +4,8 @@ import (
 	"github.com/DilanHera/mockTP/internal/app"
 )
 
+var apiNames = []string{"requestESIM", "newRegistration", "encryptLib", "checkPerso", "productProvisioning"}
+
 type Phx interface {
 	RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, error)
 	NewRegistration(input *NewRegistrationRequest) (*NewRegistrationResponse, error)
@@ -17,5 +19,6 @@ type phx struct {
 }
 
 func NewPhx(app *app.App) Phx {
+	app.Service.InitServiceStore(apiNames)
 	return &phx{app: app}
 }

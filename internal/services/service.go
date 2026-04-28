@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	GetApiInfo(apiName string, v any) (store.ApiInfo, error)
+	InitServiceStore(apiNames []string)
 }
 
 type service struct {
@@ -18,6 +19,12 @@ type service struct {
 func NewService(store *store.ApiInfoStore) *service {
 	return &service{
 		apiInfoStore: store,
+	}
+}
+
+func (s *service) InitServiceStore(apiNames []string) {
+	for _, apiName := range apiNames {
+		s.apiInfoStore.Create(apiName, "", "S", 200)
 	}
 }
 

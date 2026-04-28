@@ -35,6 +35,12 @@ var (
 
 	styleHelp = lipgloss.NewStyle().
 			Foreground(lipgloss.AdaptiveColor{Light: "235", Dark: "252"})
+
+	// styleKey highlights keyboard shortcuts inside help text.
+	// Keep it fairly high-contrast for Windows terminals.
+	styleKey = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.AdaptiveColor{Light: "#4A6E8A", Dark: "#8FB3CF"})
 )
 
 func applyTextareaTheme(t *textarea.Model) {
