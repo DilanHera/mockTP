@@ -13,7 +13,9 @@ require (
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	modernc.org/libc v1.72.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
@@ -43,6 +45,7 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/segmentio/kafka-go v0.4.51
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect

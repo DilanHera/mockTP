@@ -7,10 +7,14 @@ import (
 
 	"github.com/DilanHera/mockTP/internal/app"
 	"github.com/DilanHera/mockTP/internal/services/dt"
+	"github.com/DilanHera/mockTP/internal/services/eos"
 	"github.com/DilanHera/mockTP/internal/services/esb"
+	"github.com/DilanHera/mockTP/internal/services/ids"
 	"github.com/DilanHera/mockTP/internal/services/im"
+	"github.com/DilanHera/mockTP/internal/services/mychannel"
 	"github.com/DilanHera/mockTP/internal/services/pgzinv/serviceprovisioning"
 	"github.com/DilanHera/mockTP/internal/services/phx"
+	"github.com/DilanHera/mockTP/internal/services/smis"
 )
 
 func IndexOf[T comparable](arr []T, target T) int {
@@ -218,6 +222,30 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		}
 	case "serialNumberExpirationDate":
 		var r esb.SerialNumberExpirationDateResponse
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+	case "updateSimSerialNo":
+		var r eos.UpdateSimSerialNoResponse
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+	case "userInfo":
+		var r ids.UserInfoResponse
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+	case "updateSerial":
+		var r smis.UpdateSerialResponse
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal: %w", err)
+		}
+	case "simSerialNo":
+		var r mychannel.SimSerialNoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal: %w", err)

@@ -24,22 +24,22 @@ type QuerySimInfoResponseItem struct {
 
 type SimSerialNoListItem struct {
 	SimSerialNo       string `json:"simSerialNo" validate:"required"`
-	PreparationDate   string `json:"preparationDate" validate:"optional"`
+	PreparationDate   string `json:"preparationDate" validate:"omitempty"`
 	SimSerialNoStatus string `json:"simSerialNoStatus" validate:"required"`
-	StatusDate        string `json:"statusDate" validate:"optional"`
+	StatusDate        string `json:"statusDate" validate:"omitempty"`
 	ExpiryDate        string `json:"expiryDate" validate:"required"`
-	PackageNo         string `json:"packageNo" validate:"optional"`
-	SubRegion         string `json:"subRegion" validate:"optional"`
-	PackType          string `json:"packType" validate:"optional"`
-	SubPackType       string `json:"subPackType" validate:"optional"`
-	MobileNo          string `json:"mobileNo" validate:"optional"`
-	MobileNoStatus    string `json:"mobileNoStatus" validate:"optional"`
-	NumberClass       string `json:"numberClass" validate:"optional"`
-	NumberPattern     string `json:"numberPattern" validate:"optional"`
+	PackageNo         string `json:"packageNo" validate:"omitempty"`
+	SubRegion         string `json:"subRegion" validate:"omitempty"`
+	PackType          string `json:"packType" validate:"omitempty"`
+	SubPackType       string `json:"subPackType" validate:"omitempty"`
+	MobileNo          string `json:"mobileNo" validate:"omitempty"`
+	MobileNoStatus    string `json:"mobileNoStatus" validate:"omitempty"`
+	NumberClass       string `json:"numberClass" validate:"omitempty"`
+	NumberPattern     string `json:"numberPattern" validate:"omitempty"`
 	LuckyName         string `json:"luckyName" validate:"required"`
 	LuckyType         string `json:"luckyType" validate:"required"`
 	QRCodeInfo        string `json:"qrCodeInfo" validate:"required"`
-	Material          string `json:"material" validate:"optional"`
+	Material          string `json:"material" validate:"omitempty"`
 }
 
 func (s *serviceProvisioning) QuerySimInfo(input *QuerySimInfoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*QuerySimInfoResponse, error) {

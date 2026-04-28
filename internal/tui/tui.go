@@ -26,11 +26,19 @@ const (
 	screenDT
 	screenIM
 	screenESB
+	screenEOS
+	screenIDS
+	screenSMIS
+	screenMyChannel
 	screenServiceProvisioningMockJSON
 	screenPHXMockJSON
 	screenDTMockJSON
 	screenIMMockJSON
 	screenESBMockJSON
+	screenEOSMockJSON
+	screenIDSMockJSON
+	screenSMISMockJSON
+	screenMyChannelMockJSON
 )
 
 // clearSaveNoticeMsg dismisses the post-save confirmation after a short delay.
@@ -41,11 +49,15 @@ type model struct {
 	screen screen
 	cursor int
 	// Remember cursor when drilling down so Esc restores the parent list position.
-	savedRootCursor   int
-	savedPGZINVCursor int
-	savedDTCursor     int
-	savedIMCursor     int
-	savedESBCursor    int
+	savedRootCursor      int
+	savedPGZINVCursor    int
+	savedDTCursor        int
+	savedIMCursor        int
+	savedESBCursor       int
+	savedEOSCursor       int
+	savedIDSCursor       int
+	savedSMISCursor      int
+	savedMyChannelCursor int
 
 	width  int
 	height int
@@ -94,6 +106,14 @@ func (m *model) itemCount() int {
 		return len(IMApis)
 	case screenESB:
 		return len(ESBApis)
+	case screenEOS:
+		return len(EOSApis)
+	case screenIDS:
+		return len(IDSApis)
+	case screenSMIS:
+		return len(SMISApis)
+	case screenMyChannel:
+		return len(MyChannelApis)
 	default:
 		return 0
 	}
@@ -115,6 +135,14 @@ func (m *model) labels() []string {
 		return IMApis
 	case screenESB:
 		return ESBApis
+	case screenEOS:
+		return EOSApis
+	case screenIDS:
+		return IDSApis
+	case screenSMIS:
+		return SMISApis
+	case screenMyChannel:
+		return MyChannelApis
 	default:
 		return nil
 	}
@@ -169,7 +197,9 @@ func (m *model) newHttpCodeTextarea(apiName, value string) textarea.Model {
 }
 
 func isJSONMockScreen(s screen) bool {
-	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON || s == screenIMMockJSON || s == screenESBMockJSON
+	return s == screenServiceProvisioningMockJSON || s == screenPHXMockJSON || s == screenDTMockJSON ||
+		s == screenIMMockJSON || s == screenESBMockJSON ||
+		s == screenEOSMockJSON || s == screenIDSMockJSON || s == screenSMISMockJSON || s == screenMyChannelMockJSON
 }
 
 func isJSONSubmit(msg tea.KeyMsg) bool {
@@ -325,6 +355,30 @@ func (m model) toggleErrorState() (model, tea.Cmd) {
 		}
 		ToggleApiState(ESBApis[m.cursor], m.app)
 		return m, nil
+	case screenEOS:
+		if m.cursor < 0 || m.cursor >= len(EOSApis) {
+			return m, nil
+		}
+		ToggleApiState(EOSApis[m.cursor], m.app)
+		return m, nil
+	case screenIDS:
+		if m.cursor < 0 || m.cursor >= len(IDSApis) {
+			return m, nil
+		}
+		ToggleApiState(IDSApis[m.cursor], m.app)
+		return m, nil
+	case screenSMIS:
+		if m.cursor < 0 || m.cursor >= len(SMISApis) {
+			return m, nil
+		}
+		ToggleApiState(SMISApis[m.cursor], m.app)
+		return m, nil
+	case screenMyChannel:
+		if m.cursor < 0 || m.cursor >= len(MyChannelApis) {
+			return m, nil
+		}
+		ToggleApiState(MyChannelApis[m.cursor], m.app)
+		return m, nil
 	}
 	return m, nil
 }
@@ -429,6 +483,86 @@ func esbLabelWidth() int {
 	return width
 }
 
+func eosStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func eosLabelWidth() int {
+	width := 0
+	for _, api := range EOSApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
+func idsStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func idsLabelWidth() int {
+	width := 0
+	for _, api := range IDSApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
+func smisStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func smisLabelWidth() int {
+	width := 0
+	for _, api := range SMISApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
+func myChannelStateIndicator(api string) string {
+	if ApiStates[api] == "C" {
+		return styleCustom.Render("C")
+	}
+	if ApiStates[api] == "E" {
+		return styleErr.Render("E")
+	}
+	return styleOK.Render("S")
+}
+
+func myChannelLabelWidth() int {
+	width := 0
+	for _, api := range MyChannelApis {
+		if len(api) > width {
+			width = len(api)
+		}
+	}
+	return width
+}
+
 func (m *model) newDTMockTextarea(apiName, value string) textarea.Model {
 	t := textarea.New()
 	t.ShowLineNumbers = false
@@ -474,6 +608,66 @@ func (m *model) newESBMockTextarea(apiName, value string) textarea.Model {
 	return t
 }
 
+func (m *model) newEOSMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func (m *model) newIDSMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func (m *model) newSMISMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
+func (m *model) newMyChannelMockTextarea(apiName, value string) textarea.Model {
+	t := textarea.New()
+	t.ShowLineNumbers = false
+	t.Prompt = ""
+	t.Placeholder = ""
+	t.CharLimit = 256 * 1024
+	content := value
+	if content == "" {
+		content = m.MarshalJSONForPlaceholder(apiName)
+	}
+	t.SetValue(content)
+	applyTextareaTheme(&t)
+	return t
+}
+
 func (m *model) enter() (*model, tea.Cmd) {
 	switch m.screen {
 	case screenRoot:
@@ -498,6 +692,22 @@ func (m *model) enter() (*model, tea.Cmd) {
 			m.savedRootCursor = m.cursor
 			m.screen = screenESB
 			m.cursor = 0
+		case IndexOf(Services, "EOS"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenEOS
+			m.cursor = 0
+		case IndexOf(Services, "IDS"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenIDS
+			m.cursor = 0
+		case IndexOf(Services, "SMIS"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenSMIS
+			m.cursor = 0
+		case IndexOf(Services, "MYCHANNEL"):
+			m.savedRootCursor = m.cursor
+			m.screen = screenMyChannel
+			m.cursor = 0
 		}
 	case screenPGZINV:
 		if m.cursor == IndexOf(PgzinvApis, "serviceProvisioning") {
@@ -515,6 +725,7 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
+		m.jsonPlaceholder = PgzinvMockPlaceholder(name)
 		m.ta = m.newServiceProvisioningMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
@@ -530,6 +741,7 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
+		m.jsonPlaceholder = PhxMockPlaceholder(name)
 		m.ta = m.newPHXMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
@@ -545,6 +757,7 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
+		m.jsonPlaceholder = DtMockPlaceholder(name)
 		m.ta = m.newDTMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
@@ -560,6 +773,7 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonMockResource = name
 		m.saveNotice = ""
 		m.jsonErr = ""
+		m.jsonPlaceholder = ImMockPlaceholder(name)
 		m.ta = m.newIMMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
@@ -577,6 +791,70 @@ func (m *model) enter() (*model, tea.Cmd) {
 		m.jsonErr = ""
 		m.jsonPlaceholder = EsbMockPlaceholder(name)
 		m.ta = m.newESBMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	case screenEOS:
+		if m.cursor < 0 || m.cursor >= len(EOSApis) {
+			return m, nil
+		}
+		name := EOSApis[m.cursor]
+		m.screen = screenEOSMockJSON
+		m.jsonMockParent = screenEOS
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.jsonPlaceholder = EosMockPlaceholder(name)
+		m.ta = m.newEOSMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	case screenIDS:
+		if m.cursor < 0 || m.cursor >= len(IDSApis) {
+			return m, nil
+		}
+		name := IDSApis[m.cursor]
+		m.screen = screenIDSMockJSON
+		m.jsonMockParent = screenIDS
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.jsonPlaceholder = IdsMockPlaceholder(name)
+		m.ta = m.newIDSMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	case screenSMIS:
+		if m.cursor < 0 || m.cursor >= len(SMISApis) {
+			return m, nil
+		}
+		name := SMISApis[m.cursor]
+		m.screen = screenSMISMockJSON
+		m.jsonMockParent = screenSMIS
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.jsonPlaceholder = SmisMockPlaceholder(name)
+		m.ta = m.newSMISMockTextarea(name, "")
+		m.tas = m.newHttpCodeTextarea(name, "")
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	case screenMyChannel:
+		if m.cursor < 0 || m.cursor >= len(MyChannelApis) {
+			return m, nil
+		}
+		name := MyChannelApis[m.cursor]
+		m.screen = screenMyChannelMockJSON
+		m.jsonMockParent = screenMyChannel
+		m.jsonMockResource = name
+		m.saveNotice = ""
+		m.jsonErr = ""
+		m.jsonPlaceholder = MyChannelMockPlaceholder(name)
+		m.ta = m.newMyChannelMockTextarea(name, "")
 		m.tas = m.newHttpCodeTextarea(name, "")
 		layoutJSONEditor(m)
 		cmd := m.tas.Focus()
@@ -606,6 +884,14 @@ func (m *model) submitMockJSON() (tea.Model, tea.Cmd) {
 		return m.submitIMMockJSON()
 	case screenESBMockJSON:
 		return m.submitESBMockJSON()
+	case screenEOSMockJSON:
+		return m.submitEOSMockJSON()
+	case screenIDSMockJSON:
+		return m.submitIDSMockJSON()
+	case screenSMISMockJSON:
+		return m.submitSMISMockJSON()
+	case screenMyChannelMockJSON:
+		return m.submitMyChannelMockJSON()
 	default:
 		return m, nil
 	}
@@ -794,6 +1080,142 @@ func (m *model) submitESBMockJSON() (tea.Model, tea.Cmd) {
 	return m, clearSaveNoticeAfter(2 * time.Second)
 }
 
+func (m *model) submitEOSMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenEOSMockJSON
+		m.ta = m.newEOSMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenEOSMockJSON
+		m.ta = m.newEOSMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+
+	m.screen = screenEOS
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	m.tas.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
+func (m *model) submitIDSMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenIDSMockJSON
+		m.ta = m.newIDSMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenIDSMockJSON
+		m.ta = m.newIDSMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+
+	m.screen = screenIDS
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	m.tas.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
+func (m *model) submitSMISMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenSMISMockJSON
+		m.ta = m.newSMISMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenSMISMockJSON
+		m.ta = m.newSMISMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+
+	m.screen = screenSMIS
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	m.tas.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
+func (m *model) submitMyChannelMockJSON() (tea.Model, tea.Cmd) {
+	raw := json.RawMessage(strings.TrimSpace(m.ta.Value()))
+	httpCode, ok := parseHTTPStatusCode(m.tas.Value())
+	if !ok {
+		m.jsonErr = "invalid HttpStatusCode (expected 100-999)"
+		m.screen = screenMyChannelMockJSON
+		m.ta = m.newMyChannelMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+	_ = m.app.ApiInfoStore.UpdateHttpCode(m.jsonMockResource, httpCode)
+
+	err := m.SetCustomResponse(m.jsonMockResource, raw)
+	if err != nil {
+		m.jsonErr = err.Error()
+		m.screen = screenMyChannelMockJSON
+		m.ta = m.newMyChannelMockTextarea(m.jsonMockResource, m.ta.Value())
+		m.tas = m.newHttpCodeTextarea(m.jsonMockResource, m.tas.Value())
+		layoutJSONEditor(m)
+		cmd := m.tas.Focus()
+		return m, cmd
+	}
+
+	m.screen = screenMyChannel
+	m.jsonMockResource = ""
+	m.jsonErr = ""
+	m.saveNotice = "Saved successfully."
+	m.ta.Blur()
+	m.tas.Blur()
+	return m, clearSaveNoticeAfter(2 * time.Second)
+}
+
 func parseHTTPStatusCode(raw string) (int, bool) {
 	s := strings.TrimSpace(raw)
 	if s == "" {
@@ -809,7 +1231,8 @@ func parseHTTPStatusCode(raw string) (int, bool) {
 
 func (m *model) goBack() *model {
 	switch m.screen {
-	case screenServiceProvisioningMockJSON, screenPHXMockJSON, screenDTMockJSON, screenIMMockJSON, screenESBMockJSON:
+	case screenServiceProvisioningMockJSON, screenPHXMockJSON, screenDTMockJSON, screenIMMockJSON, screenESBMockJSON,
+		screenEOSMockJSON, screenIDSMockJSON, screenSMISMockJSON, screenMyChannelMockJSON:
 		return m.leaveJSONEditor()
 	case screenServiceProvisioning:
 		m.screen = screenPGZINV
@@ -817,16 +1240,7 @@ func (m *model) goBack() *model {
 	case screenPGZINV:
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
-	case screenPHX:
-		m.screen = screenRoot
-		m.cursor = m.savedRootCursor
-	case screenDT:
-		m.screen = screenRoot
-		m.cursor = m.savedRootCursor
-	case screenIM:
-		m.screen = screenRoot
-		m.cursor = m.savedRootCursor
-	case screenESB:
+	case screenPHX, screenDT, screenIM, screenESB, screenEOS, screenIDS, screenSMIS, screenMyChannel:
 		m.screen = screenRoot
 		m.cursor = m.savedRootCursor
 	}
@@ -849,6 +1263,14 @@ func (m *model) breadcrumb() string {
 		return "IM"
 	case screenESB:
 		return "ESB"
+	case screenEOS:
+		return "EOS"
+	case screenIDS:
+		return "IDS"
+	case screenSMIS:
+		return "SMIS"
+	case screenMyChannel:
+		return "MYCHANNEL"
 	case screenServiceProvisioningMockJSON:
 		return "PGZINV > ServiceProvisioning > " + m.jsonMockResource + " [JSON]"
 	case screenPHXMockJSON:
@@ -859,6 +1281,14 @@ func (m *model) breadcrumb() string {
 		return "IM > " + m.jsonMockResource + " [JSON]"
 	case screenESBMockJSON:
 		return "ESB > " + m.jsonMockResource + " [JSON]"
+	case screenEOSMockJSON:
+		return "EOS > " + m.jsonMockResource + " [JSON]"
+	case screenIDSMockJSON:
+		return "IDS > " + m.jsonMockResource + " [JSON]"
+	case screenSMISMockJSON:
+		return "SMIS > " + m.jsonMockResource + " [JSON]"
+	case screenMyChannelMockJSON:
+		return "MYCHANNEL > " + m.jsonMockResource + " [JSON]"
 	default:
 		return "mockTP"
 	}
@@ -876,10 +1306,25 @@ func (m *model) View() string {
 		b.WriteString("\n")
 		b.WriteString(m.ta.View())
 		if m.jsonErr != "" {
-			b.WriteString("\n\n")
-			b.WriteString(styleErr.Render("Error: " + m.jsonErr))
+			w := editorContentWidth(m.width)
+			errText := "Error: " + m.jsonErr
+			// Wrap onto at most 2 lines; truncate the second line with … if still too long.
+			line1, line2 := errText, ""
+			if len(errText) > w && w > 0 {
+				line1 = errText[:w]
+				line2 = errText[w:]
+				if len(line2) > w && w > 1 {
+					line2 = line2[:w-1] + "…"
+				}
+			}
+			b.WriteString("\n")
+			b.WriteString(styleErr.Render(line1))
+			b.WriteString("\n")
+			b.WriteString(styleErr.Render(line2))
+			b.WriteString("\n")
+		} else {
+			b.WriteString("\n\n\n")
 		}
-		b.WriteString("\n\n")
 		b.WriteString(styleHelp.Render(renderHelpKeys("Tab switch input · Esc cancel · Ctrl+S save mock · Enter = new line · Ctrl+C copy placeholder · Ctrl+X quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render(renderHelpKeys("F4 clear editor · Ctrl+Home / Ctrl+End jump document")))
@@ -890,7 +1335,9 @@ func (m *model) View() string {
 
 	var b strings.Builder
 	b.WriteString(styleTitle.Render(m.breadcrumb()))
-	if (m.screen == screenServiceProvisioning || m.screen == screenPHX || m.screen == screenDT || m.screen == screenIM || m.screen == screenESB) && m.saveNotice != "" {
+	if (m.screen == screenServiceProvisioning || m.screen == screenPHX || m.screen == screenDT ||
+		m.screen == screenIM || m.screen == screenESB || m.screen == screenEOS ||
+		m.screen == screenIDS || m.screen == screenSMIS || m.screen == screenMyChannel) && m.saveNotice != "" {
 		b.WriteString("\n\n")
 		b.WriteString(styleOK.Render(m.saveNotice))
 	}
@@ -933,6 +1380,34 @@ func (m *model) View() string {
 			}
 			displayLabel = label + strings.Repeat(" ", padding+1) + esbStateIndicator(label)
 		}
+		if m.screen == screenEOS {
+			padding := eosLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + eosStateIndicator(label)
+		}
+		if m.screen == screenIDS {
+			padding := idsLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + idsStateIndicator(label)
+		}
+		if m.screen == screenSMIS {
+			padding := smisLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + smisStateIndicator(label)
+		}
+		if m.screen == screenMyChannel {
+			padding := myChannelLabelWidth() - len(label)
+			if padding < 0 {
+				padding = 0
+			}
+			displayLabel = label + strings.Repeat(" ", padding+1) + myChannelStateIndicator(label)
+		}
 
 		line := "  " + displayLabel
 		if i == m.cursor {
@@ -970,7 +1445,7 @@ func (m *model) View() string {
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
-	case screenESB:
+	case screenESB, screenEOS, screenIDS, screenSMIS, screenMyChannel:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
 		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))

@@ -1,6 +1,6 @@
 package tui
 
-var Services = []string{"PGZINV", "PHX", "DT", "IM", "ESB"}
+var Services = []string{"PGZINV", "PHX", "DT", "IM", "ESB", "EOS", "IDS", "SMIS", "MYCHANNEL"}
 
 var PgzinvApis = []string{"serviceProvisioning"}
 
@@ -32,3 +32,11 @@ var ESBApis = []string{
 	"persoSim",
 	"serialNumberExpirationDate",
 }
+
+var EOSApis = []string{"updateSimSerialNo"}
+
+var IDSApis = []string{"userInfo"}
+
+var SMISApis = []string{"updateSerial"}
+
+var MyChannelApis = []string{"simSerialNo"}

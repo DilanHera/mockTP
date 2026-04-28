@@ -1,5 +1,15 @@
 package esb
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"regexp"
+	"time"
+
+	"github.com/DilanHera/mockTP/internal/kafka"
+)
+
 type CreateFreightOrderRequest struct {
 	MessageID            string                   `json:"MessageID" validate:"required"`
 	PartnerName          string                   `json:"PartnerName" validate:"required"`
@@ -48,6 +58,123 @@ type CreateFreightOrderResponse struct {
 	HttpStatusCode     int    `json:"-"`
 }
 
+// KafkaMessage is the top-level envelope published to Kafka after a freight order is created.
+type KafkaMessage struct {
+	Header KafkaHeader      `json:"header"`
+	Body   KafkaFreightBody `json:"body"`
+}
+
+type KafkaHeader struct {
+	Version        string        `json:"version"`
+	Timestamp      string        `json:"timestamp"`
+	OrgService     string        `json:"orgService"`
+	Scope          string        `json:"scope"`
+	From           string        `json:"from"`
+	Channel        string        `json:"channel"`
+	Agent          string        `json:"agent"`
+	Broker         string        `json:"broker"`
+	UseCase        string        `json:"useCase"`
+	UseCaseStep    string        `json:"useCaseStep"`
+	UseCaseAge     int           `json:"useCaseAge"`
+	FunctionName   string        `json:"functionName"`
+	MessageType    string        `json:"messageType"`
+	Session        string        `json:"session"`
+	Transaction    string        `json:"transaction"`
+	Communication  string        `json:"communication"`
+	GroupTags      []string      `json:"groupTags"`
+	Identity       KafkaIdentity `json:"identity"`
+	ReturnedError  string        `json:"returnedError"`
+	InitUri        string        `json:"initUri"`
+	InitMethod     string        `json:"initMethod"`
+	TmfSpec        string        `json:"tmfSpec"`
+	BaseApiVersion string        `json:"baseApiVersion"`
+	SchemaVersion  string        `json:"schemaVersion"`
+}
+
+type KafkaIdentity struct {
+	Public []string `json:"public"`
+}
+
+type KafkaFreightBody struct {
+	HeaderText            string             `json:"HeaderText"`
+	FreightOrderNumber    string             `json:"FreightOrderNumber"`
+	CarrierTrackingNumber string             `json:"CarrierTrackingNumber"`
+	CarrierName           string             `json:"CarrierName"`
+	Carrier               string             `json:"Carrier"`
+	EventCode             string             `json:"EventCode"`
+	EventDescription      string             `json:"EventDescription"`
+	ActualDate            string             `json:"ActualDate"`
+	Item                  []KafkaFreightItem `json:"Item"`
+	MessageID             string             `json:"MessageID"`
+	PartnerName           string             `json:"PartnerName"`
+	PartnerMessageID      string             `json:"PartnerMessageID"`
+}
+
+type KafkaFreightItem struct {
+	ItemNo                    string `json:"ItemNo"`
+	SourceSystemName          string `json:"SourceSystemName"`
+	SourceSystem              string `json:"SourceSystem"`
+	CustomerReference         string `json:"CustomerReference"`
+	SalesOrderNumber          string `json:"SalesOrderNumber"`
+	StockTransportOrderNumber string `json:"StockTransportOrderNumber"`
+}
+
+func (e *esb) callProducer(freightOrderNo, referenceNo string) error {
+	messageId := "AGkAgK7iwQ0bBhmhtEU_1YcE9T5P"
+	re := regexp.MustCompile(`^[a-zA-Z]*`)
+	trackingNo := re.ReplaceAllString(referenceNo, "MOCK")
+	msg := KafkaMessage{
+		Header: KafkaHeader{
+			Version:        "5.0",
+			Timestamp:      time.Now().UTC().Format(time.RFC3339Nano),
+			OrgService:     "SAP",
+			Scope:          "global",
+			From:           "SAP",
+			FunctionName:   "FreightOrder",
+			MessageType:    "event",
+			Session:        messageId,
+			Transaction:    messageId,
+			Communication:  "unicast",
+			GroupTags:      []string{},
+			Identity:       KafkaIdentity{Public: []string{messageId}},
+			TmfSpec:        "none",
+			BaseApiVersion: "none",
+			SchemaVersion:  "none",
+		},
+		Body: KafkaFreightBody{
+			FreightOrderNumber:    freightOrderNo,
+			CarrierTrackingNumber: trackingNo,
+			CarrierName:           "บจ. โกลบอล เจท เอ็กซ์เพรส",
+			Carrier:               "6100108050",
+			EventCode:             "Z_PICKUP",
+			ActualDate:            time.Now().UTC().Format("20060102150405"),
+			Item: []KafkaFreightItem{
+				{
+					ItemNo:            "1",
+					SourceSystemName:  "Redeem (Privilege)",
+					SourceSystem:      "Z008",
+					CustomerReference: referenceNo,
+				},
+			},
+			MessageID:        messageId,
+			PartnerName:      "SAP",
+			PartnerMessageID: "13cbfb26-3283-1fd0-acfb-28b42d24b189",
+		},
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println("failed to marshal message:", err)
+		return err
+	}
+
+	return e.app.Kafka.Produce(kafka.KafkaProducerConfig{
+		Context:  context.Background(),
+		Topic:    "sap.proxy.trackingStatusUpdated",
+		Messages: []string{string(data)},
+	})
+}
+
 func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreightOrderResponse, error) {
 	res := CreateFreightOrderResponse{}
 	result, err := e.app.Service.GetApiInfo("createFreightOrder", &res)
@@ -55,6 +182,7 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 		if err != nil {
 			return nil, err
 		}
+		_ = e.callProducer(res.FreightOrderNumber, input.ReferenceNumber)
 		res.HttpStatusCode = result.HttpCode
 		return &res, nil
 	}
@@ -70,13 +198,17 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 		}, nil
 	}
 
-	return &CreateFreightOrderResponse{
+	resp := &CreateFreightOrderResponse{
 		FreightOrderNumber: "6200088900",
 		MessageType:        "S",
 		MessageDesc:        "Business document with temporary number $1 saved as business doc. 6200088900",
-		MessageID:          "ECF92F6BF2EA4976B423247278CEB458",
+		MessageID:          "AGkAgK7iwQ0bBhmhtEU_1YcE9T5P",
 		PartnerName:        "OPTIMUS",
-		PartnerMessageID:   "20260427080253557",
+		PartnerMessageID:   "13cbfb26-3283-1fd0-acfb-28b42d24b189",
 		HttpStatusCode:     200,
-	}, nil
+	}
+
+	_ = e.callProducer(resp.FreightOrderNumber, resp.FreightOrderNumber)
+
+	return resp, nil
 }

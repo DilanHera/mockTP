@@ -8,10 +8,17 @@ func editorContentWidth(termWidth int) int {
 }
 
 // layoutJSONEditor sizes the JSON textarea for the full content area below chrome.
+// Fixed chrome: title(1) + blank(1) + HttpStatusCode(1) + blank(1) + "Response:"(1) = 5 lines above.
+// Fixed chrome below: blank(1) + help(3) = 4 lines below. Total fixed = 9.
+// When an error is present 3 additional lines are reserved (blank separator + 2 error lines).
 func layoutJSONEditor(m *model) {
 	w := editorContentWidth(m.width)
-	const chromeLines = 9
-	h := m.height - chromeLines
+	const fixedChrome = 9
+	errorLines := 0
+	if m.jsonErr != "" {
+		errorLines = 3
+	}
+	h := m.height - fixedChrome - errorLines
 	if h < 6 {
 		h = 6
 	}
