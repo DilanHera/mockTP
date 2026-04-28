@@ -29,8 +29,8 @@ func main() {
 	mode := flag.String("mode", "", "run mode: server or tui")
 	port := flag.Int("port", 3001, "port to listen on")
 	kafkaBroker := flag.String("kafkabroker", "192.168.2.106:9092", "kafka broker to connect to")
-	kafkaUsername := flag.String("kafkauser", "", "username for kafka authentication")
-	kafkaPassword := flag.String("kafkapass", "", "password for kafka authentication")
+	kafkaUsername := flag.String("kafkauser", "test", "username for kafka authentication")
+	kafkaPassword := flag.String("kafkapass", "test-secret", "password for kafka authentication")
 
 	flag.Parse()
 
