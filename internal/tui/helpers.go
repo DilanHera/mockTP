@@ -108,7 +108,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
 		}
-	case "requestEsimPrepaid", "requestEsimPostpaid":
+	case "requestESIM":
 		var r phx.RequestESIMResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
@@ -188,7 +188,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		}
 	case "oauthToken":
 		var r esb.OauthTokenResponse
-		err := m.app.Helper.UnmarshalAndValidate(jsonData, &r)
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
 			return fmt.Errorf("failed to unmarshal: %w", err)
 		}
