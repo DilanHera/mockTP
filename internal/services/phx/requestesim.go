@@ -1,5 +1,10 @@
 package phx
 
+import (
+	"math/rand"
+	"strconv"
+)
+
 type RequestESIMRequest struct {
 	Msisdn        string `json:"msisdn" validate:"required"`
 	ESimProject   string `json:"eSimProject" validate:"required"`
@@ -62,7 +67,7 @@ func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, erro
 				Imsi:       "1234567890",
 				QRCodeInfo: "1234567890",
 				RegionCode: "1234567890",
-				SerialNo:   "1234567890",
+				SerialNo:   strconv.Itoa(rand.Intn(9000000000) + 1000000000),
 			},
 		},
 	}, nil
