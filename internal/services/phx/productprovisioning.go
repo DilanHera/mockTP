@@ -80,6 +80,9 @@ func (p *phx) ProductProvisioning(input *ProductProvisioningRequest) (*ProductPr
 		}, nil
 	}
 
+	if result.State == "T" {
+		p.app.Helper.Delay(30)
+	}
 	return &ProductProvisioningResponse{
 		ResultCode: "20000",
 		ResultDesc: "Success",

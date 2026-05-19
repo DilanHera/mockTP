@@ -44,6 +44,11 @@ func (i *ids) UserInfo(req *UserInfoRequest) (UserInfoResponse, error) {
 			HttpStatusCode: 500,
 		}, nil
 	}
+
+	if result.State == "T" {
+		i.app.Helper.Delay(30)
+	}
+
 	return UserInfoResponse{
 		Sub:               "EMPLOYEELDAP",
 		Pincode:           "00066026",

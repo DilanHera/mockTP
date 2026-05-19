@@ -146,6 +146,9 @@ func (d *dt) QueryPrint(input *QueryPrintRequest) (*QueryPrintResponse, error) {
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	response := &QueryPrintResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

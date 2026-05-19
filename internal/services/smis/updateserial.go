@@ -54,6 +54,9 @@ func (s *smis) UpdateSerial(input *UpdateSerialRequest) (UpdateSerialResponse, e
 			HttpStatusCode:  500,
 		}, nil
 	}
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
 	return UpdateSerialResponse{
 		ResponseCode:    "0000",
 		ResponseMessage: "Success",

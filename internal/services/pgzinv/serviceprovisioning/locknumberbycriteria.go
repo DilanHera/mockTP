@@ -52,9 +52,8 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 		res.HttpStatusCode = result.HttpCode
 		return res, nil
 	}
-	response := &LockNumberByCriteriaResponse{}
 	if result.State == "E" {
-		response = &LockNumberByCriteriaResponse{
+		return LockNumberByCriteriaResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
 				ResourceGroupId:  requestHeader.ResourceGroupId,
 				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
@@ -80,46 +79,48 @@ func (s *serviceProvisioning) LockNumberByCriteria(input *LockNumberByCriteriaRe
 				},
 			},
 			HttpStatusCode: 500,
-		}
-	} else {
-		response = &LockNumberByCriteriaResponse{
-			ResponseHeader: pgzinvmodel.ResponseHeader{
-				ResourceGroupId:  requestHeader.ResourceGroupId,
-				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
-				ReTransmit:       "0",
-				UserSys:          requestHeader.UserSys,
-				DeveloperMessage: "",
-				ResultCode:       "20000",
-				ResultDesc:       "Success",
-			},
-			ResourceItemList: []LockNumberByCriteriaResponseItem{
-				{
-					ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
-						ResourceName:           input.ResourceName,
-						ResourceItemStatus:     "Success",
-						ErrorFlag:              "1",
-						ResourceItemErrMessage: "Success",
-						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
-							SuppCode:             []string{},
-							TaskKeyCondition:     []string{},
-							TaskDeveloperMessage: []string{},
-						},
+		}, nil
+	}
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
+	response := &LockNumberByCriteriaResponse{
+		ResponseHeader: pgzinvmodel.ResponseHeader{
+			ResourceGroupId:  requestHeader.ResourceGroupId,
+			ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+			ReTransmit:       "0",
+			UserSys:          requestHeader.UserSys,
+			DeveloperMessage: "",
+			ResultCode:       "20000",
+			ResultDesc:       "Success",
+		},
+		ResourceItemList: []LockNumberByCriteriaResponseItem{
+			{
+				ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
+					ResourceName:           input.ResourceName,
+					ResourceItemStatus:     "Success",
+					ErrorFlag:              "1",
+					ResourceItemErrMessage: "Success",
+					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+						SuppCode:             []string{},
+						TaskKeyCondition:     []string{},
+						TaskDeveloperMessage: []string{},
 					},
-					Key:                 "1234567",
-					RequestPrepResponse: []RequestPrepResponseItem{},
 				},
+				Key:                 "1234567",
+				RequestPrepResponse: []RequestPrepResponseItem{},
 			},
-			HttpStatusCode: 200,
-		}
-		quantity, err := strconv.Atoi(input.Quantity)
-		if err != nil {
-			return *response, err
-		}
-		for range quantity {
-			response.ResourceItemList[0].RequestPrepResponse = append(response.ResourceItemList[0].RequestPrepResponse, RequestPrepResponseItem{
-				MobileNo: fmt.Sprintf("061%07d", rand.Intn(10000000)),
-			})
-		}
+		},
+		HttpStatusCode: 200,
+	}
+	quantity, err := strconv.Atoi(input.Quantity)
+	if err != nil {
+		return *response, err
+	}
+	for range quantity {
+		response.ResourceItemList[0].RequestPrepResponse = append(response.ResourceItemList[0].RequestPrepResponse, RequestPrepResponseItem{
+			MobileNo: fmt.Sprintf("061%07d", rand.Intn(10000000)),
+		})
 	}
 	return *response, nil
 }

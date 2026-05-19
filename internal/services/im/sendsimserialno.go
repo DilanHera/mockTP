@@ -48,6 +48,9 @@ func (i *im) SendSimSerialNo(input *SendSimSerialNoRequest) (*SendSimSerialNoRes
 		}, nil
 	}
 
+	if result.State == "T" {
+		i.app.Helper.Delay(30)
+	}
 	return &SendSimSerialNoResponse{
 		StatusDescription: "success",
 		OrderNo:           input.OrderNo,

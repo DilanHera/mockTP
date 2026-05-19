@@ -198,6 +198,9 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 		}, nil
 	}
 
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	resp := &CreateFreightOrderResponse{
 		FreightOrderNumber: "6200088900",
 		MessageType:        "S",

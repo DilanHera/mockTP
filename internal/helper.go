@@ -3,18 +3,20 @@ package internal
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
 
 var validate = validator.New()
-var apiStates = []string{"S", "E", "C"}
+var apiStates = []string{"S", "E", "C", "T"}
 
 type Helper interface {
 	UnmarshalAndValidate(data []byte, v any) error
 	DecodeAndValidate(data []byte, v any) error
 	ValidateStruct(s any) error
 	ToggleApiState(currentState string) string
+	Delay(duration int)
 }
 
 type helper struct {
@@ -54,4 +56,11 @@ func (h *helper) ToggleApiState(currentState string) string {
 		}
 	}
 	return ""
+}
+
+func (h *helper) Delay(duration int) {
+	if duration == 0 {
+		duration = 30
+	}
+	time.Sleep(time.Duration(duration) * time.Second)
 }

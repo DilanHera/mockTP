@@ -42,6 +42,9 @@ func (m *myChannel) SimSerialNo(input *SimSerialNoRequest) (*SimSerialNoResponse
 		}, nil
 	}
 
+	if result.State == "T" {
+		m.app.Helper.Delay(30)
+	}
 	return &SimSerialNoResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

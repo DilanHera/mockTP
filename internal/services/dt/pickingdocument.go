@@ -48,6 +48,9 @@ func (d *dt) PickingDocument(input *PickingDocumentRequest) (*PickingDocumentRes
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	response := &PickingDocumentResponse{
 		ResultCode: "20000",
 		ResultDesc: "Success picking document list",

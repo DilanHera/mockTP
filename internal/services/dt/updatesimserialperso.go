@@ -33,6 +33,9 @@ func (d *dt) UpdateSimSerialPerso(input *UpdateSimSerialPersoRequest) (*UpdateSi
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	return &UpdateSimSerialPersoResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

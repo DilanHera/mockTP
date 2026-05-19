@@ -51,6 +51,9 @@ func (d *dt) QueryStockImeiMyStore(input *QueryStockImeiMyStoreRequest) (*QueryS
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	response := &QueryStockImeiMyStoreResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

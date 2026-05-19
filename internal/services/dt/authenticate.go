@@ -32,6 +32,9 @@ func (d *dt) Authenticate(input *AuthenticateRequest) (*AuthenticateResponse, er
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	return &AuthenticateResponse{
 		StatusCode: "200",
 		Message:    "success authenticate",

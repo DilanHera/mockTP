@@ -390,6 +390,9 @@ func serviceProvisioningStateIndicator(resource string) string {
 	if ApiStates[resource] == "E" {
 		return styleErr.Render("E")
 	}
+	if ApiStates[resource] == "T" {
+		return styleTimeout.Render("T")
+	}
 	return styleOK.Render("S")
 }
 
@@ -409,6 +412,9 @@ func phxStateIndicator(api string) string {
 	}
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
+	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
 	}
 	return styleOK.Render("S")
 }
@@ -430,6 +436,9 @@ func dtStateIndicator(api string) string {
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
 	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
+	}
 	return styleOK.Render("S")
 }
 
@@ -449,6 +458,9 @@ func imStateIndicator(api string) string {
 	}
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
+	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
 	}
 	return styleOK.Render("S")
 }
@@ -470,6 +482,9 @@ func esbStateIndicator(api string) string {
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
 	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
+	}
 	return styleOK.Render("S")
 }
 
@@ -489,6 +504,9 @@ func eosStateIndicator(api string) string {
 	}
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
+	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
 	}
 	return styleOK.Render("S")
 }
@@ -510,6 +528,9 @@ func idsStateIndicator(api string) string {
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
 	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
+	}
 	return styleOK.Render("S")
 }
 
@@ -530,6 +551,9 @@ func smisStateIndicator(api string) string {
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
 	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
+	}
 	return styleOK.Render("S")
 }
 
@@ -549,6 +573,9 @@ func myChannelStateIndicator(api string) string {
 	}
 	if ApiStates[api] == "E" {
 		return styleErr.Render("E")
+	}
+	if ApiStates[api] == "T" {
+		return styleTimeout.Render("T")
 	}
 	return styleOK.Render("S")
 }
@@ -1424,33 +1451,33 @@ func (m *model) View() string {
 	case screenServiceProvisioning:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom · " + styleTimeout.Render("T") + " = Timeout"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleTimeout.Render("T") + " → " + styleOK.Render("S") + ".")))
 	case screenPHX:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom · " + styleTimeout.Render("T") + " = Timeout"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleTimeout.Render("T") + " → " + styleOK.Render("S") + ".")))
 	case screenDT:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom · " + styleTimeout.Render("T") + " = Timeout"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleTimeout.Render("T") + " → " + styleOK.Render("S") + ".")))
 	case screenIM:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom · " + styleTimeout.Render("T") + " = Timeout"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleTimeout.Render("T") + " → " + styleOK.Render("S") + ".")))
 	case screenESB, screenEOS, screenIDS, screenSMIS, screenMyChannel:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open JSON · t toggle selected API state · Esc back (root: quit) · q quit")))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom"))
+		b.WriteString(styleHelp.Render("Legend: " + styleOK.Render("S") + " = Success · " + styleErr.Render("E") + " = Error · " + styleCustom.Render("C") + " = Custom · " + styleTimeout.Render("T") + " = Timeout"))
 		b.WriteString("\n")
-		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleOK.Render("S") + ".")))
+		b.WriteString(styleHelp.Render(renderHelpKeys("Note: t cycles through " + styleOK.Render("S") + " → " + styleErr.Render("E") + " → " + styleCustom.Render("C") + " → " + styleTimeout.Render("T") + " → " + styleOK.Render("S") + ".")))
 	default:
 		b.WriteString(styleHelp.Render(renderHelpKeys("↑/↓ · Enter open · Esc back (root: quit) · q quit")))
 	}

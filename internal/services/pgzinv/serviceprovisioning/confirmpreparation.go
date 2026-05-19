@@ -71,17 +71,17 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 		res.HttpStatusCode = result.HttpCode
 		return res, nil
 	}
-	response := &ConfirmPreparationResponse{}
 	if result.State == "E" {
-		response = &ConfirmPreparationResponse{
+		return ConfirmPreparationResponse{
 			ResponseHeader: pgzinvmodel.ResponseHeader{
-				ReTransmit:       "0",
-				UserSys:          requestHeader.UserSys,
-				ResourceGroupId:  requestHeader.ResourceGroupId,
-				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
-				ResultCode:       "50000",
-				ResultDesc:       "Failed: confirmPreparationPostpaid(1) mobile and sim are status Registered.",
-				DeveloperMessage: "",
+				CustomerOrderType: requestHeader.CustomerOrderType,
+				ReTransmit:        "0",
+				UserSys:           requestHeader.UserSys,
+				ResourceGroupId:   requestHeader.ResourceGroupId,
+				ResourceOrderId:   "DBSIPGSA001G-PGZINV-202303171437060271",
+				ResultCode:        "50000",
+				ResultDesc:        "Failed: confirmPreparationPostpaid(1) mobile and sim are status Registered.",
+				DeveloperMessage:  "",
 			},
 			ResourceItemList: []ConfirmPreparationResponseItem{
 				{
@@ -99,53 +99,54 @@ func (s *serviceProvisioning) ConfirmPreparation(input *ConfirmPreparationReques
 				},
 			},
 			HttpStatusCode: 500,
-		}
-	} else {
-		response = &ConfirmPreparationResponse{
-			ResponseHeader: pgzinvmodel.ResponseHeader{
-				ResourceGroupId:  requestHeader.ResourceGroupId,
-				ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
-				ReTransmit:       "0",
-				UserSys:          requestHeader.UserSys,
-				DeveloperMessage: "",
-				ResultCode:       "20000",
-				ResultDesc:       "Success",
-			},
-			ResourceItemList: []ConfirmPreparationResponseItem{
-				{
-					ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
-						ResourceName:           input.ResourceName,
-						ResourceItemStatus:     "Success",
-						ErrorFlag:              "1",
-						ResourceItemErrMessage: "Success",
-						SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
-							SuppCode:             []string{},
-							TaskKeyCondition:     []string{},
-							TaskDeveloperMessage: []string{},
-						},
+		}, nil
+	}
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
+	return ConfirmPreparationResponse{
+		ResponseHeader: pgzinvmodel.ResponseHeader{
+			ResourceGroupId:  requestHeader.ResourceGroupId,
+			ResourceOrderId:  "DBSIPGSA001G-PGZINV-202303171437060271",
+			ReTransmit:       "0",
+			UserSys:          requestHeader.UserSys,
+			DeveloperMessage: "",
+			ResultCode:       "20000",
+			ResultDesc:       "Success",
+		},
+		ResourceItemList: []ConfirmPreparationResponseItem{
+			{
+				ResourceItemListBase: pgzinvmodel.ResourceItemListBase{
+					ResourceName:           input.ResourceName,
+					ResourceItemStatus:     "Success",
+					ErrorFlag:              "1",
+					ResourceItemErrMessage: "Success",
+					SpecialErrHandling: pgzinvmodel.SpecialErrHandling{
+						SuppCode:             []string{},
+						TaskKeyCondition:     []string{},
+						TaskDeveloperMessage: []string{},
 					},
-					ConfirmPrepResponse: []ConfirmPrepResponseItem{
-						{
-							SimSerialNo:    input.SimSerialNo,
-							MobileNo:       input.MobileNo,
-							PrepNo:         input.PrepNo,
-							ExpiryDate:     "31/06/2026",
-							RegionCode:     input.RegionCode,
-							ClassifyCode:   "N",
-							PatternNo:      "51",
-							NumberStatusTo: "B",
-							SimType:        input.SimType,
-							Package:        input.Package,
-							PackageRowId:   input.PackageRowId,
-							LuckyName:      "Mor_AIS",
-							LuckyType:      "Good Money & Love",
-							QRCodeInfo:     "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
-						},
+				},
+				ConfirmPrepResponse: []ConfirmPrepResponseItem{
+					{
+						SimSerialNo:    input.SimSerialNo,
+						MobileNo:       input.MobileNo,
+						PrepNo:         input.PrepNo,
+						ExpiryDate:     "31/06/2026",
+						RegionCode:     input.RegionCode,
+						ClassifyCode:   "N",
+						PatternNo:      "51",
+						NumberStatusTo: "B",
+						SimType:        input.SimType,
+						Package:        input.Package,
+						PackageRowId:   input.PackageRowId,
+						LuckyName:      "Mor_AIS",
+						LuckyType:      "Good Money & Love",
+						QRCodeInfo:     "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
 					},
 				},
 			},
-			HttpStatusCode: 200,
-		}
-	}
-	return *response, nil
+		},
+		HttpStatusCode: 200,
+	}, nil
 }

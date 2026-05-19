@@ -113,6 +113,9 @@ func (e *esb) DOCreation(input *DOCreationRequest) (*DOCreationResponse, error) 
 		}, nil
 	}
 
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	return &DOCreationResponse{
 		MessageType:      "S",
 		MessageDesc:      "Outbound Delivery created",

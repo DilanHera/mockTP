@@ -66,13 +66,14 @@ type ServiceProvisioningPayload struct {
 
 /* Response Model */
 type ResponseHeader struct {
-	ResourceGroupId  string `json:"resourceGroupId" validate:"required"`
-	ResourceOrderId  string `json:"resourceOrderId" validate:"required"`
-	ResultCode       string `json:"resultCode" validate:"required"`
-	ResultDesc       string `json:"resultDesc" validate:"required"`
-	DeveloperMessage string `json:"developerMessage"`
-	UserSys          string `json:"userSys" validate:"required"`
-	ReTransmit       string `json:"reTransmit" validate:"required"`
+	CustomerOrderType string `json:"customerOrderType"`
+	ResourceGroupId   string `json:"resourceGroupId" validate:"required"`
+	ResourceOrderId   string `json:"resourceOrderId" validate:"required"`
+	ResultCode        string `json:"resultCode" validate:"required"`
+	ResultDesc        string `json:"resultDesc" validate:"required"`
+	DeveloperMessage  string `json:"developerMessage"`
+	UserSys           string `json:"userSys" validate:"required"`
+	ReTransmit        string `json:"reTransmit" validate:"required"`
 }
 
 type ResourceItemListBase struct {

@@ -35,6 +35,9 @@ func (e *eos) UpdateSimSerialNo(input *UpdateSimSerialNoRequest) (UpdateSimSeria
 			HttpStatusCode:    500,
 		}, nil
 	}
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	return UpdateSimSerialNoResponse{
 		StatusCode:        "200",
 		StatusDescription: "Success",

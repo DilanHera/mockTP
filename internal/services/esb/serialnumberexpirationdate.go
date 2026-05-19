@@ -60,6 +60,9 @@ func (e *esb) SerialNumberExpirationDate(input *SerialNumberExpirationDateReques
 		}, nil
 	}
 
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	return &SerialNumberExpirationDateResponse{
 		MessageID:        "AGnu3gnT_T6pmJOnuzxDk0BX4EEg",
 		PartnerName:      "SAP",

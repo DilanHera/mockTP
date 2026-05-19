@@ -59,6 +59,9 @@ func (p *phx) NewRegistration(input *NewRegistrationRequest) (*NewRegistrationRe
 		}, nil
 	}
 
+	if result.State == "T" {
+		p.app.Helper.Delay(30)
+	}
 	response := &NewRegistrationResponse{
 		ResultCode:     "20000",
 		ResultDesc:     "Success",

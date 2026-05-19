@@ -38,6 +38,9 @@ func (p *phx) EncryptLib(input *EncryptLibRequest) (*EncryptLibResponse, error) 
 		}, nil
 	}
 
+	if result.State == "T" {
+		p.app.Helper.Delay(30)
+	}
 	return &EncryptLibResponse{
 		ResultCode:       "20000",
 		ResultDesc:       "Success",

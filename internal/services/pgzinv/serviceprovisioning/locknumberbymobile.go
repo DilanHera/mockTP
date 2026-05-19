@@ -57,6 +57,9 @@ func (s *serviceProvisioning) LockNumberByMobile(input *LockNumberByMobileReques
 		}, nil
 	}
 
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
 	response := &LockNumberByMobileResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,

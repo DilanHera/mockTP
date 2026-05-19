@@ -44,6 +44,9 @@ func (e *esb) LegoupdateOrderStatus(input *LegoupdateOrderStatusRequest) (*Legou
 		}, nil
 	}
 
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	return &LegoupdateOrderStatusResponse{
 		TransactionID: "2ad5135a-8cb6-482a-9f48-610ef68cc435",
 		ResultCode:    "20000",

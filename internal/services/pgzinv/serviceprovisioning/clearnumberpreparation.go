@@ -60,6 +60,9 @@ func (s *serviceProvisioning) ClearNumberPreparation(input *ClearNumberPreparati
 		}, nil
 	}
 
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
 	return &ClearNumberPreparationResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,

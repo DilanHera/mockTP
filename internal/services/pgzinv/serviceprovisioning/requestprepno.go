@@ -74,6 +74,9 @@ func (s *serviceProvisioning) RequestPrepNo(input *RequestPrepNoRequestResourceI
 		}, nil
 	}
 
+	if result.State == "T" {
+		s.app.Helper.Delay(30)
+	}
 	response := &RequestPrepNoResponse{
 		ResponseHeader: pgzinvmodel.ResponseHeader{
 			ResourceGroupId:  requestHeader.ResourceGroupId,

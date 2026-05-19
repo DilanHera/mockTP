@@ -157,6 +157,9 @@ func (p *phx) CheckPerso(input *CheckPersoRequest) (*CheckPersoResponse, error) 
 		}, nil
 	}
 
+	if result.State == "T" {
+		p.app.Helper.Delay(30)
+	}
 	return &CheckPersoResponse{
 		ResultCode:       "20000",
 		DeveloperMessage: "",

@@ -38,6 +38,9 @@ func (d *dt) ReprintReceiptForm(input *ReprintReceiptFormRequest) (*ReprintRecei
 		}, nil
 	}
 
+	if result.State == "T" {
+		d.app.Helper.Delay(30)
+	}
 	response := &ReprintReceiptFormResponse{
 		ResultCode:        "20000",
 		ResultDescription: "Success",

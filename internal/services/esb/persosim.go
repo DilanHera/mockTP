@@ -35,6 +35,9 @@ func (e *esb) Persosim(input *PersosimRequest) (*PersosimResponse, error) {
 		}, nil
 	}
 
+	if result.State == "T" {
+		e.app.Helper.Delay(30)
+	}
 	return &PersosimResponse{
 		StatusCode:        "200",
 		StatusDescription: "Success",

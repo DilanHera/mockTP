@@ -53,6 +53,9 @@ func (p *phx) RequestESIM(input *RequestESIMRequest) (*RequestESIMResponse, erro
 		}, nil
 	}
 
+	if result.State == "T" {
+		p.app.Helper.Delay(30)
+	}
 	return &RequestESIMResponse{
 		ResultCode:     "20000",
 		ResultDesc:     "Success",
