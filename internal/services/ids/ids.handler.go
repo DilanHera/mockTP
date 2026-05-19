@@ -13,7 +13,8 @@ type idsHandler struct {
 }
 
 func NewIdsHandler(app *app.App) *idsHandler {
-	return &idsHandler{app: app}
+	ids := NewIds(app)
+	return &idsHandler{app: app, ids: ids}
 }
 
 func (h *idsHandler) AuthenHandler(w http.ResponseWriter, r *http.Request) {

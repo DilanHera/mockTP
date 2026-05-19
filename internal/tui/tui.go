@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/DilanHera/mockTP/internal/app"
-	"github.com/DilanHera/mockTP/internal/services/im"
 	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
@@ -1055,13 +1054,6 @@ func (m *model) submitIMMockJSON() (tea.Model, tea.Cmd) {
 		layoutJSONEditor(m)
 		cmd := m.tas.Focus()
 		return m, cmd
-	}
-
-	switch m.jsonMockResource {
-	case "sendSimSerialNo":
-		if im.UserSendSimSerialNo != nil {
-			im.UserSendSimSerialNo.HttpStatusCode = httpCode
-		}
 	}
 
 	m.screen = screenIM

@@ -17,6 +17,7 @@ type pgzinv struct {
 }
 
 func NewPgzinv(app *app.App) Pgzinv {
+	serviceprovisioning.NewServiceProvisioning(app)
 	return &pgzinv{
 		app: app,
 	}
