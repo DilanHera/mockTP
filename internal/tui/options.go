@@ -16,6 +16,7 @@ var ServiceProvisioningResources = []string{
 	"requestPrepNoPostpaid",
 	"confirmPreparationPrepaid",
 	"confirmPreparationPostpaid",
+	"preMatching",
 }
 
 var PHXApis = []string{"requestESIM", "newRegistration", "encryptLib", "checkPerso", "productProvisioning"}

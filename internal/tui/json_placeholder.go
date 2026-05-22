@@ -346,7 +346,7 @@ func PgzinvMockPlaceholder(resourceName string) string {
 			ResourceItemList: []serviceprovisioning.LockNumberByCriteriaResponseItem{
 				{
 					ResourceItemListBase: baseItem,
-					Key:                 "1234567",
+					Key:                  "1234567",
 					RequestPrepResponse: []serviceprovisioning.RequestPrepResponseItem{
 						{MobileNo: "0610000001"},
 					},
@@ -435,6 +435,25 @@ func PgzinvMockPlaceholder(resourceName string) string {
 							LuckyType:      "Good Money & Love",
 							QRCodeInfo:     "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
 						},
+					},
+				},
+			},
+		})
+		return string(res)
+	case "preMatching":
+		res, _ := json.Marshal(serviceprovisioning.PreMatchingResponse{
+			ResponseHeader: header,
+			ResourceItemList: []serviceprovisioning.PreMatchingResourceItem{
+				{
+					ResourceItemListBase: baseItem,
+					PreMatchingResult: serviceprovisioning.PreMatchingResult{
+						SimSerialNo: "mock-serial-no",
+						MobileNo:    "mock-mobile-no",
+						PrepNo:      "9060368002",
+						ExpiryDate:  "31/06/2027",
+						EanCode:     "9999999999999",
+						MatCode:     "1000000101",
+						QRCodeInfo:  "LPA:1$secsmsminiapp.eastcompeace.com$80D88923FADA3C76656D344AF",
 					},
 				},
 			},

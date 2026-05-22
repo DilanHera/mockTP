@@ -96,6 +96,17 @@ func (p *pgzinv) ServiceProvisioning(input *pgzinvmodel.ServiceProvisioningPaylo
 			return nil, err
 		}
 		return response, nil
+	case "preMatching":
+		request := &serviceprovisioning.PreMatchingRequestResourceItem{}
+		err := p.app.Helper.UnmarshalAndValidate(input.Payload, request)
+		if err != nil {
+			return nil, err
+		}
+		response, err := spResource.PreMatching(request, input.RequestHeader)
+		if err != nil {
+			return nil, err
+		}
+		return response, nil
 	default:
 		return nil, errors.New("invalid resource name")
 	}

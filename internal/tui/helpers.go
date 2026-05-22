@@ -62,7 +62,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.LockNumberByCriteriaResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -71,7 +71,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.LockNumberByMobileResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -80,7 +80,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.ConfirmPreparationResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -89,7 +89,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.QuerySimInfoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -98,7 +98,16 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.ClearNumberPreparationResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
+		}
+		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
+			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
+		}
+	case "preMatching":
+		var r serviceprovisioning.PreMatchingResponse
+		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
+		if err != nil {
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -107,7 +116,7 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r serviceprovisioning.RequestPrepNoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 		if len(r.ResourceItemList) > 0 && r.ResourceItemList[0].ResourceName != resourceName {
 			return fmt.Errorf("wrong resource name, expected: %s", resourceName)
@@ -116,139 +125,139 @@ func (m *model) SetCustomResponse(resourceName string, jsonData json.RawMessage)
 		var r phx.RequestESIMResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "newRegistration":
 		var r phx.NewRegistrationResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "encryptLib":
 		var r phx.EncryptLibResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "checkPerso": // continue from here
 		var r phx.CheckPersoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "productProvisioning":
 		var r phx.ProductProvisioningResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "listOrderNoByDono":
 		var r dt.ListOrderNoByDonoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "pickingDocument":
 		var r dt.PickingDocumentResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "queryPrint":
 		var r dt.QueryPrintResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "queryStockImeiMyStore":
 		var r dt.QueryStockImeiMyStoreResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "reprintReceiptForm":
 		var r dt.ReprintReceiptFormResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "updateSimSerialPerso":
 		var r dt.UpdateSimSerialPersoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "authenticate":
 		var r dt.AuthenticateResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "sendSimSerialNo":
 		var r im.SendSimSerialNoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "oauthToken":
 		var r esb.OauthTokenResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "createFreightOrder":
 		var r esb.CreateFreightOrderResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "doCreation":
 		var r esb.DOCreationResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "legoUpdateOrderStatus":
 		var r esb.LegoupdateOrderStatusResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "persoSim":
 		var r esb.PersosimResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "serialNumberExpirationDate":
 		var r esb.SerialNumberExpirationDateResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "updateSimSerialNo":
 		var r eos.UpdateSimSerialNoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "userInfo":
 		var r ids.UserInfoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "updateSerial":
 		var r smis.UpdateSerialResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	case "simSerialNo":
 		var r mychannel.SimSerialNoResponse
 		err := m.app.Helper.DecodeAndValidate(jsonData, &r)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal: %w", err)
+			return err
 		}
 	default:
 		return fmt.Errorf("unknown resource name: %s", resourceName)

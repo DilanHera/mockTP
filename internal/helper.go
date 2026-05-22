@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -43,10 +44,14 @@ func (h *helper) DecodeAndValidate(data []byte, v any) error {
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(v); err != nil {
-		return err
+		return fmt.Errorf("failed to decode: %w", err)
 	}
 
-	return h.ValidateStruct(v)
+	if err := h.ValidateStruct(v); err != nil {
+		return fmt.Errorf("failed to validate: %w", err)
+	}
+
+	return nil
 }
 
 func (h *helper) ToggleApiState(currentState string) string {

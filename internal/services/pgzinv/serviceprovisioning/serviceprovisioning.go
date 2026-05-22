@@ -7,7 +7,7 @@ import (
 
 var resources = []string{"lockNumberByCriteriaPrepaid", "lockNumberByCriteriaPostpaid", "lockNumberByMobilePrepaid",
 	"lockNumberByMobilePostpaid", "clearNumberPreparationPrepaid", "clearNumberPreparationPostpaid", "querySimInfo",
-	"requestPrepNoPrepaid", "requestPrepNoPostpaid", "confirmPreparationPrepaid", "confirmPreparationPostpaid"}
+	"requestPrepNoPrepaid", "requestPrepNoPostpaid", "confirmPreparationPrepaid", "confirmPreparationPostpaid", "preMatching"}
 
 type ServiceProvisioning interface {
 	LockNumberByCriteria(input *LockNumberByCriteriaRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (LockNumberByCriteriaResponse, error)
@@ -16,6 +16,7 @@ type ServiceProvisioning interface {
 	QuerySimInfo(input *QuerySimInfoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*QuerySimInfoResponse, error)
 	RequestPrepNo(input *RequestPrepNoRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (*RequestPrepNoResponse, error)
 	ConfirmPreparation(input *ConfirmPreparationRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (ConfirmPreparationResponse, error)
+	PreMatching(input *PreMatchingRequestResourceItem, requestHeader pgzinvmodel.HeaderServiceProvisioning) (PreMatchingResponse, error)
 }
 
 type serviceProvisioning struct {
