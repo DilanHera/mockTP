@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -17,6 +18,7 @@ type Helper interface {
 	DecodeAndValidate(data []byte, v any) error
 	ValidateStruct(s any) error
 	ToggleApiState(currentState string) string
+	WriteResponse(w http.ResponseWriter, status int, data any)
 	Delay(duration int)
 }
 
@@ -68,4 +70,10 @@ func (h *helper) Delay(duration int) {
 		duration = 30
 	}
 	time.Sleep(time.Duration(duration) * time.Second)
+}
+
+func (h *helper) WriteResponse(w http.ResponseWriter, status int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
 }

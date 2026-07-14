@@ -21,20 +21,24 @@ func NewESBHandler(app *app.App) *ESBHandler {
 }
 
 func (h *ESBHandler) OauthTokenHandler(w http.ResponseWriter, r *http.Request) {
-	request := &OauthTokenRequest{}
-	err := json.NewDecoder(r.Body).Decode(request)
-	if err != nil {
+	if err := r.ParseForm(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	request := &OauthTokenRequest{
+		ClientId:     r.PostFormValue("client_id"),
+		ClientSecret: r.PostFormValue("client_secret"),
+		GrantType:    r.PostFormValue("grant_type"),
+		Nonce:        r.PostFormValue("nonce"),
+	}
+
 	response, err := h.esb.OauthToken(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(response.HttpStatusCode)
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }
 
 func (h *ESBHandler) CreateFreightOrderHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,8 +53,7 @@ func (h *ESBHandler) CreateFreightOrderHandler(w http.ResponseWriter, r *http.Re
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }
 
 func (h *ESBHandler) DOCreationHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,8 +68,7 @@ func (h *ESBHandler) DOCreationHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }
 
 func (h *ESBHandler) LegoupdateOrderStatusHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,8 +83,7 @@ func (h *ESBHandler) LegoupdateOrderStatusHandler(w http.ResponseWriter, r *http
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }
 
 func (h *ESBHandler) PersosimHandler(w http.ResponseWriter, r *http.Request) {
@@ -97,8 +98,7 @@ func (h *ESBHandler) PersosimHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }
 
 func (h *ESBHandler) SerialNumberExpirationDateHandler(w http.ResponseWriter, r *http.Request) {
@@ -113,6 +113,5 @@ func (h *ESBHandler) SerialNumberExpirationDateHandler(w http.ResponseWriter, r 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(response)
+	h.app.Helper.WriteResponse(w, response.HttpStatusCode, response)
 }

@@ -211,7 +211,7 @@ func (e *esb) CreateFreightOrder(input *CreateFreightOrderRequest) (*CreateFreig
 		HttpStatusCode:     200,
 	}
 
-	_ = e.callProducer(resp.FreightOrderNumber, resp.FreightOrderNumber)
+	// _ = e.callProducer(resp.FreightOrderNumber, resp.FreightOrderNumber)
 
 	return resp, nil
 }
